@@ -1,0 +1,2 @@
+model_checkpoint_path: "/mnt/jxvs2_02/neil/Striatal_Segmentation/network_weights/model"
+all_model_checkpoint_paths: "/mnt/jxvs2_02/neil/Striatal_Segmentation/network_weights/model"
