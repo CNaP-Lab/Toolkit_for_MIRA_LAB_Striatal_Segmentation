@@ -1,12 +1,10 @@
 function nontippversion_CNNstriatalSegmentation(varargin)
-
-    continueBool = false;
     
     numArgIn = length(varargin);
     currentArgNumber = 1;
     while (currentArgNumber <= numArgIn)
         lowerStringCurrentArg = lower(string(varargin{currentArgNumber}));
-        isNameValuePair = true;
+        numToAdd = 2;
         switch(lowerStringCurrentArg)
             case "segmentation_python_code"
                 segmentation_python_code = varargin{currentArgNumber + 1};
@@ -22,20 +20,11 @@ function nontippversion_CNNstriatalSegmentation(varargin)
                 segmentation_intermediate_directory = varargin{currentArgNumber + 1};
             case "bold_template_image"
                 BOLD_template_image = varargin{currentArgNumber + 1};            
-            case "continue"
-                continueBool = true;
-                isNameValuePair = false;
             otherwise
                 error("Unrecognized input argument")
         end
-        if (isNameValuePair)
-            numToAdd = 2;
-        else
-            numToAdd = 1;
-        end
         currentArgNumber = currentArgNumber + numToAdd;
     end
-    
     disp('Read all arguments')
     
 %
