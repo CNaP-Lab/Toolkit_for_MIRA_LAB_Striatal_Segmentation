@@ -1,4 +1,4 @@
-# Toolkit_for_MIRA_LAB_Striatal_Segmentation
+# Toolkit_for_MIRA_LAB_Striatal_Segmentation -short readme edition
 
 This readme will briefly describe how to run this version of the Striatal Segmentation pipeline on any given computer. 
 This version does not depend on TIPP. Prior to the running the pipeline, the parameters in the nontipp_call.m script
@@ -16,3 +16,12 @@ Further information will be provided on this pipeline shortly.
 Requires:
 -SPM12
 -tippVol
+
+
+This pipeline was tested using the following versions of Python and libraries: 
+Python: 2.7.5
+Tensorflow: 2.10.0
+Numpy: 1.23.2
+Nibabel: 4.0.2
+Scipy: 1.9.1
+
