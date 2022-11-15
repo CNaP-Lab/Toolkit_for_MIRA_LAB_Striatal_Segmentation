@@ -14,14 +14,14 @@ Further information will be provided on this pipeline shortly.
 
 
 Requires:
--SPM12
--tippVol
+1. SPM12
+2. tippVol
 
 
 This pipeline was tested using the following versions of Python and libraries: 
-Python: 2.7.5
-Tensorflow: 2.10.0
-Numpy: 1.23.2
-Nibabel: 4.0.2
-Scipy: 1.9.1
+1. Python: 2.7.5
+2. Tensorflow: 2.10.0
+3. Numpy: 1.23.2
+4. Nibabel: 4.0.2
+5. Scipy: 1.9.1
 
