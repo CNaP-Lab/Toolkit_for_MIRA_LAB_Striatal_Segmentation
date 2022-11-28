@@ -10,10 +10,13 @@ III. PIPELINE STEPS
 
 IV. REQUIRED DEPENDENCIES, PYTHON VERSION, AND OTHER FILES
 	
+----------------------------------------------------------------------------------------------
 
 I. SUMMARY
 
-This readme.txt describes how to run a pipeline that produces CNN-based segmentations of the striatal regions of the brain for given structural or functional MRI images the user provides. It also describes how this pipeline work, running instructions, the dependencies required, and the parameters the user must adjust. This pipeline is based in MATLAB and python; much of the editable components are written in MATLAB. 
+This readme.txt covers a pipeline that produces CNN-based segmentations of the striatal regions of the brain for given structural and functional MRI images the user provides. The striatal regions segmented are the: ventral striatum, pre-commissural putamen, post-commissural putamen, pre-commissural caudate, post-commissural caudate. The user provides a T1-weighted structural MRI image in ACPC orientation, a NAT brain mask in ACPC orientation, and a bold functional MRI image, in order to produce 2 final products: a NIFTI file containing segmentations that can be overlaid on the T1 image and a NIFTI file containing segmentations that can be overlaid on the fMRI image.
+
+This readme.txt will detail how this pipeline works (in a step-by-step fashion), running instructions, the dependencies required, and the parameters the user must adjust. This pipeline is based in MATLAB and python; much of the editable components are written in MATLAB. 
 
 The main operating script of the pipeline is CNNStriatalSegmentation.m. This script is called by CNNStriatalSegmentation_call.m, which has a set of parameters that the user is instructed to adjust therein. Full running operations are discussed in the following section. 
 
@@ -27,21 +30,21 @@ II. RUNNING INSTRUCTIONS:
 
 4. Adjust the necessary parameters in CNNStriatalSegmentation_call.m; supply the paths for the files and subfolders as instructed therein and as described below:
 
-	For first time set-up of the pipeline only, modify the variables segmentation_python_code, cnn_reslice_template and segmentation_directory. 		Segmentation_python_code refers to the path of script orig_mod_NNEval.py, included in this github repository. Reslice_template.nii refers to the 	path of reslice_template.nii, included in this github repository. Segmentation_directory refers to the path of the StriatalSegmentation folder, 	included in this repository.  
+	A)For first time set-up of the pipeline only, modify the variables segmentation_python_code, cnn_reslice_template and segmentation_directory. 			Segmentation_python_code refers to the path of script orig_mod_NNEval.py, included in this github repository. Reslice_template.nii refers 		  to the path of reslice_template.nii, included in this github repository. Segmentation_directory refers to the path of the 				StriatalSegmentation folder, included in this repository.  
 
-	For each run of the pipeline involving different subjects, the following are required and the paths must be adjusted: 					segmentation_intermediate_directory,t1_acpc_dc_restore_brain,nat_acpc_brainmask, and bold_template_image. 
+	B)For each run of the pipeline involving different subjects, the following are required and the paths must be adjusted:						segmentation_intermediate_directory,t1_acpc_dc_restore_brain,nat_acpc_brainmask, and bold_template_image. 
+		
+		Segmentation_intermediate_directory refers to the directory where all intermediate and final outputs of this CNN pipeline will be saved for each subject run. 
 
-	Segmentation_intermediate_directory refers to the directory where all intermediate and final outputs of this CNN pipeline will be saved for each 	subject run. 
+		T1_acpc_dc_restore_brain refers to the path of the T1 weighted MRI image (in NAT space) relating to the subject used for this run.
 
-	T1_acpc_dc_restore_brain refers to the path of the T1 weighted MRI image (in NAT space) relating to the subject used for this run.
+		Nat_acpc_brainmask refers to the path of the brain mask relating to the subject used for this run.
 
-	Nat_acpc_brainmask refers to the path of the brain mask relating to the subject used for this run.
-
-	Bold_template_image refers to the path of the bold functional MRI image relating to the subject used for this run.
-
+		Bold_template_image refers to the path of the bold functional MRI image relating to the subject used for this run.
+	
 5. Ensure SPM12 and tippVol are on your path in MATLAB and run the script CNNStriatalSegmentation_call.m. 
 
-6. You may now inspect your final striatal segmentations for both your structural and functional images, found in the segmentation_intermediate_directory from CNNStriatalSegmentation_call.m, in an image viewer of your choice. Our team used MRIcron, a free tool readily available at: https://www.nitrc.org/projects/mricron. The directory also contains intermediates generated in the pipeline, which may be viewed. 
+6. You may now inspect your final striatal segmentations for both your structural and functional images, found in the segmentation_intermediate_directory (whose path you edited in CNNStriatalSegmentation_call.m from step 5), in an image viewer of your choice. Our team used MRIcron, a free tool readily available at: https://www.nitrc.org/projects/mricron. The directory also contains intermediates generated in the pipeline, which may be viewed. 
 
 III. PIPELINE STEPS
 
@@ -78,3 +81,5 @@ Nibabel: 4.0.2
 Scipy: 1.9.
 
 SPM12 must be installed prior to running the pipeline. 
+
+Additionally, in order to run this pipeline, a T1-weighted structural MRI image in ACPC orientation, a NAT brain mask in ACPC orientation, and a bold functional MRI image are required, as described in step 4B in RUNNING INSTRUCTIONS. 
