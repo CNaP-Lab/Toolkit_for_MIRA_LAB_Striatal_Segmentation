@@ -1,5 +1,5 @@
 % NOTE TO USER: 
-% Please adjust the lines 5,7,9, & 11 for each run where the input images change (different subjects).  
+% Please adjust the lines 5,7,9,& 11 for each run where the input images change (different subjects).  
 
 % Provide the directory below where all intermediate and final outputs of this CNN pipeline will be saved for each subject run.
 segmentation_intermediate_directory = '/mnt/jxvs2_02/neil/SBKanalysis_fromhelix/50002';
