@@ -1,4 +1,4 @@
-function nontippversion_CNNstriatalSegmentation(varargin)
+function CNNStriatalSegmentation(varargin)
     
     %% new part
     
