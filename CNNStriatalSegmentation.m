@@ -1,21 +1,35 @@
 function nontippversion_CNNstriatalSegmentation(varargin)
     
+    %% new part
+    
+ m_file_name_and_path=mfilename('fullpath');
+[m_file_directory,~,~]=fileparts(m_file_name_and_path);
+segmentation_python_code_filename='orig_mod_NNEval.py';
+segmentation_python_code=fullfile(m_file_directory,segmentation_python_code_filename);
+
+segmentation_directory_name='StriatalSegmentation';
+segmentation_directory=fullfile(m_file_directory,segmentation_directory_name);
+
+cnn_reslice_template_filename='reslice_template.nii';
+cnn_reslice_template=fullfile(m_file_directory,'StriatalSegmentation',cnn_reslice_template_filename);
+
+    %% end of new part
     numArgIn = length(varargin);
     currentArgNumber = 1;
     while (currentArgNumber <= numArgIn)
         lowerStringCurrentArg = lower(string(varargin{currentArgNumber}));
         numToAdd = 2;
         switch(lowerStringCurrentArg)
-            case "segmentation_python_code"
-                segmentation_python_code = varargin{currentArgNumber + 1};
+         %   case "segmentation_python_code"
+         %       segmentation_python_code = varargin{currentArgNumber + 1};
             case "t1_acpc_dc_restore_brain"
                 T1_acpc_dc_restore_brain = varargin{currentArgNumber + 1};
             case "nat_acpc_brainmask"
                 nat_acpc_brainmask = varargin{currentArgNumber + 1};
-            case "cnn_reslice_template"
-                CNN_reslice_template = varargin{currentArgNumber + 1};
-            case "segmentation_directory"
-                segmentation_directory = varargin{currentArgNumber + 1};
+         %   case "cnn_reslice_template"
+         %       CNN_reslice_template = varargin{currentArgNumber + 1};
+         %   case "segmentation_directory"
+         %       segmentation_directory = varargin{currentArgNumber + 1};
             case "segmentation_intermediate_directory"
                 segmentation_intermediate_directory = varargin{currentArgNumber + 1};
             case "bold_template_image"
