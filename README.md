@@ -28,11 +28,9 @@ II. RUNNING INSTRUCTIONS:
 
 3. Within the checkpoint file, please replace “/mnt/jxvs2_02/neil/StriatalSegmentation/“ to where your subfolder StriatalSegmentation is located.
 
-4. Adjust the necessary parameters in CNNStriatalSegmentation_call.m; supply the paths for the files and subfolders as instructed therein and as described below:
+4. Adjust the necessary parameters in CNNStriatalSegmentation_call.m; supply the paths for the files and subfolders as instructed therein and as described below.
 
-	A)For first time set-up of the pipeline only, modify the variables segmentation_python_code, cnn_reslice_template and segmentation_directory. 			Segmentation_python_code refers to the path of script orig_mod_NNEval.py, included in this github repository. Reslice_template.nii refers 		  to the path of reslice_template.nii, included in this github repository. Segmentation_directory refers to the path of the 				StriatalSegmentation folder, included in this repository.  
-
-	B)For each run of the pipeline involving different subjects, the following are required and the paths must be adjusted:						segmentation_intermediate_directory,t1_acpc_dc_restore_brain,nat_acpc_brainmask, and bold_template_image. 
+	For each run of the pipeline involving different subjects, the following are required and the paths must be adjusted:						segmentation_intermediate_directory,t1_acpc_dc_restore_brain,nat_acpc_brainmask, and bold_template_image. 
 		
 		Segmentation_intermediate_directory refers to the directory where all intermediate and final outputs of this CNN pipeline will be saved for each subject run. 
 
