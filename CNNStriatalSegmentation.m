@@ -1,35 +1,39 @@
-function CNNStriatalSegmentation(varargin)
-        
+function [store]=CNNStriatalSegmentation(varargin)
+ 
+       
  m_file_name_and_path=mfilename('fullpath');
 [m_file_directory,~,~]=fileparts(m_file_name_and_path);
 segmentation_python_code_filename='orig_mod_NNEval.py';
 segmentation_python_code=fullfile(m_file_directory,segmentation_python_code_filename);
+% Segmentation_python_code refers to the the path of the script orig_mod_NNEval.py, which is included in the github repository. The script uses previously %generated trained network weights to predict striatal segmentations for input MRI & fMRI images.
 
 segmentation_directory_name='StriatalSegmentation';
 segmentation_directory=fullfile(m_file_directory,segmentation_directory_name);
+% Segmentation_directory refers to the StriatalSegmentation folder, included in the github repository. The folder includes the below reslice_template.nii file as well as 4 files that are used by the python script for determining CNN network weights.
 
-cnn_reslice_template_filename='reslice_template.nii';
-cnn_reslice_template=fullfile(m_file_directory,'StriatalSegmentation',cnn_reslice_template_filename);
+CNN_reslice_template_filename='reslice_template.nii';
+CNN_reslice_template=fullfile(m_file_directory,'StriatalSegmentation',CNN_reslice_template_filename);
+% CNN_reslice_template refers to the path of reslice_template.nii, which is included in the github repository. This is a nifti image file provided so that 
+%input images can be resliced according to the nii's resolution, which is the resolution expected by the python script, orig_mod_NNEval.py
 
+% Store, a struct, saves the file names and image types of
+% all final and intermediate outputs generated during this pipeline run.
+store.fname{1}='null';
+store.imagetype{1}='null';
+    %% end of new part
     numArgIn = length(varargin);
     currentArgNumber = 1;
     while (currentArgNumber <= numArgIn)
-        lowerStringCurrentArg = lower(string(varargin{currentArgNumber}));
+        StringCurrentArg = (string(varargin{currentArgNumber}));
         numToAdd = 2;
-        switch(lowerStringCurrentArg)
-         %   case "segmentation_python_code"
-         %       segmentation_python_code = varargin{currentArgNumber + 1};
-         %   case "cnn_reslice_template"
-         %       CNN_reslice_template = varargin{currentArgNumber + 1};
-         %   case "segmentation_directory"
-         %       segmentation_directory = varargin{currentArgNumber + 1};
-            case "t1_acpc_dc_restore_brain"
+        switch(StringCurrentArg)
+            case "T1_acpc_dc_restore_brain"
                 T1_acpc_dc_restore_brain = varargin{currentArgNumber + 1};
             case "nat_acpc_brainmask"
                 nat_acpc_brainmask = varargin{currentArgNumber + 1};
             case "segmentation_intermediate_directory"
                 segmentation_intermediate_directory = varargin{currentArgNumber + 1};
-            case "bold_template_image"
+            case "BOLD_template_image"
                 BOLD_template_image = varargin{currentArgNumber + 1};            
             otherwise
                 error("Unrecognized input argument")
@@ -39,19 +43,19 @@ cnn_reslice_template=fullfile(m_file_directory,'StriatalSegmentation',cnn_reslic
     disp('Read all arguments')
    
     imageType = 'striatalCNNrotated_NATt1brain';
-    [rotatedCNN_T1] = getRotatedCNN_image(T1_acpc_dc_restore_brain,imageType,'toCNN');
+    [store,rotatedCNN_T1] = getRotatedCNN_image(store,T1_acpc_dc_restore_brain,imageType,'toCNN');
     imageType = 'striatalCNNrotated_NATbrainmask';
-    [rotatedCNN_brainmask] = getRotatedCNN_image(nat_acpc_brainmask,imageType,'toCNN');
+    [store,rotatedCNN_brainmask] = getRotatedCNN_image(store,nat_acpc_brainmask,imageType,'toCNN');
      
 
     imageType = 'striatalCNNres_striatalCNNrotated_NATt1brain';
     isMask = false;
     imagePrefix = 'striatalCNNres_';
-    [reslicedRotatedCNN_T1] = getReslicedCNN_image(rotatedCNN_T1,CNN_reslice_template,imageType,imagePrefix,isMask);
+    [store,reslicedRotatedCNN_T1] = getReslicedCNN_image(store,rotatedCNN_T1,CNN_reslice_template,imageType,imagePrefix,isMask);
     imageType = 'striatalCNNres_striatalCNNrotated_NATbrainmask';
     isMask = true;
     imagePrefix = 'striatalCNNres_';
-    [reslicedRotatedCNN_brainmask] = getReslicedCNN_image(rotatedCNN_brainmask,CNN_reslice_template,imageType,imagePrefix,isMask);
+    [store,reslicedRotatedCNN_brainmask] = getReslicedCNN_image(store,rotatedCNN_brainmask,CNN_reslice_template,imageType,imagePrefix,isMask);
 
     segmentation_python_output_intermediate_filename = 'CNN_striatal_python_output_intermediate.mat';
     segmentation_python_output_intermediate_fullpath = fullfile(segmentation_intermediate_directory , segmentation_python_output_intermediate_filename);
@@ -71,26 +75,26 @@ cnn_reslice_template=fullfile(m_file_directory,'StriatalSegmentation',cnn_reslic
 
     [out,mri] = pythonCNNstriatalSegmentation(segmentation_python_code , reslicedRotatedCNN_T1, segmentation_python_output_intermediate_fullpath, segmentation_directory);
 
-    [raw_segmentation_filename] = segmentation_postprocessing(out,mri,eroded_padded_brain_mask,VV_reslicedRotatedCNN_brainmask,segmentation_intermediate_directory);
+    [store,raw_segmentation_filename] = segmentation_postprocessing(store,out,mri,eroded_padded_brain_mask,VV_reslicedRotatedCNN_brainmask,segmentation_intermediate_directory);
 
     imageType = 'unrotated_striatalCNN_segmentation';
-    [unrotatedCNN_segmentation] = getRotatedCNN_image(raw_segmentation_filename,imageType,'toACPC');
+    [store,unrotatedCNN_segmentation] = getRotatedCNN_image(store,raw_segmentation_filename,imageType,'toACPC');
 
     imageType = 'anatRes_NATspace_striatalCNNparcels';
     imagePrefix = [imageType '_'];
     isMask = true;
-    [anatRes_NATspace_striatalCNNparcels] = getReslicedCNN_image(unrotatedCNN_segmentation,T1_acpc_dc_restore_brain,imageType,imagePrefix,isMask);
+    [store,anatRes_NATspace_striatalCNNparcels] = getReslicedCNN_image(store,unrotatedCNN_segmentation,T1_acpc_dc_restore_brain,imageType,imagePrefix,isMask);
 
     imageType = 'BOLDRes_NATspace_striatalCNNparcels';
     imagePrefix = [imageType '_'];
     isMask = true;
-    [BOLDRes_NATspace_striatalCNNparcels] = getReslicedCNN_image(unrotatedCNN_segmentation,BOLD_template_image,imageType,imagePrefix,isMask);
+    [store,BOLDRes_NATspace_striatalCNNparcels] = getReslicedCNN_image(store,unrotatedCNN_segmentation,BOLD_template_image,imageType,imagePrefix,isMask);
 
     disp('Full striatal segmentation pipeline complete.');  pause(eps); drawnow;
 
 
 
-function [rotatedFileText] = getRotatedCNN_image(T1_filename,imageType,direction)
+function [store,rotatedFileText] = getRotatedCNN_image(store,T1_filename,imageType,direction)
     %Rotate 90 deg
     [a,b,c] = fileparts(T1_filename);
     if (strcmpi(direction,'toCNN'))
@@ -111,10 +115,17 @@ function [rotatedFileText] = getRotatedCNN_image(T1_filename,imageType,direction
         delete(rotatedFileText); pause(eps); drawnow;
     end
     spm_write_vol(VV,YY); pause(eps); drawnow;
+    
+    
+    [a,b,c] = fileparts(VV.fname);
+    imagefname = [b c];
+    store.fname{end+1}=imagefname;
+    store.imagetype{end+1}=imageType;
+    
 
 end
 
-function [reslicedRotatedCNN_T1] = getReslicedCNN_image(source_T1,reslice_template,imageType,imagePrefix,isMask)
+function [store,reslicedRotatedCNN_T1] = getReslicedCNN_image(store,source_T1,reslice_template,imageType,imagePrefix,isMask)
     %Reslice to the resolution desired by the CNN python script
     %If is a mask, will use nearest neighbor interpolation.  Make sure
     %isMask = true!
@@ -137,7 +148,13 @@ function [reslicedRotatedCNN_T1] = getReslicedCNN_image(source_T1,reslice_templa
         delete(reslicedRotatedCNN_T1); pause(eps); drawnow;
     end
     spm_jobman('run',{slicejob(1)}); pause(eps); drawnow;
-
+    
+    [a,b,c] = fileparts(reslicedRotatedCNN_T1);
+    imagefname = [b c];
+    store.fname{end+1}=imagefname;
+    store.imagetype{end+1}=imageType;
+    
+    
 end
 
 
@@ -158,7 +175,7 @@ function [out,mri] = pythonCNNstriatalSegmentation(segmentation_python_code , T1
     pause(eps); drawnow;
 end
 
-function [raw_segmentation_filename] = segmentation_postprocessing(out,mri,eroded_padded_brain_mask,VV_reslicedRotatedCNN_brainmask,segmentation_intermediate_directory)
+function [store,raw_segmentation_filename] = segmentation_postprocessing(store,out,mri,eroded_padded_brain_mask,VV_reslicedRotatedCNN_brainmask,segmentation_intermediate_directory)
     % After previous step, we get a.out in size of 256x256x192x6, where
     % 6 represents the segmentation layers, including 1 for background.
 
@@ -208,6 +225,15 @@ function [raw_segmentation_filename] = segmentation_postprocessing(out,mri,erode
         delete(raw_segmentation_filename); pause(eps); drawnow;
     end
 spm_write_vol(VV_reslicedRotatedCNN_brainmask,out); pause(eps); drawnow;
+
+    imageType = 'raw_StriatalCNNparcels';
+% 
+    [a,b,c] = fileparts(VV_reslicedRotatedCNN_brainmask.fname);
+    imagefname = [b c];
+   
+    store.fname{end+1}=imagefname;
+    store.imagetype{end+1}=imageType;
+
 
 end
 end

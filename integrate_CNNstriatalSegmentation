@@ -1,9 +1,4 @@
-
-function [obj] = integrate_CNNstriatalSegmentation(obj)
-%% the purpose of this is to obtain the following from TIPP and integrate them with the nontipp version: T1_acpc_dc_restore_brain,
-% nat_acpc_brainmask,BOLD_template_image,segmentation_intermediate_directory,segmentation_python_output_intermediate_fullpath.
-
-
+function [obj] = integrate_CNNStriatalSegmentation(obj)
     pause(eps); drawnow;
     % Uses T1w_acpc_dc_restore_brain.nii, ac-pc aligned (acpc), readout distortion
     % corrected (dc), bias field corrected (restore), skull-stripped (brain), T1w images.
@@ -11,17 +6,17 @@ function [obj] = integrate_CNNstriatalSegmentation(obj)
     if isa(obj,'TIPPstudy')
         numSubjects = length(obj.(obj.sub));
         for i = 1:numSubjects
-            obj.(obj.sub)(i).integrate_CNNstriatalSegmentation(); pause(eps); drawnow;
+            obj.(obj.sub)(i).integrate_CNNStriatalSegmentation(); pause(eps); drawnow;
         end
     elseif ~isa(obj,'TIPPsubj')
-        obj.par.integrate_CNNstriatalSegmentation();
+        obj.par.integrate_CNNStriatalSegmentation();
     else %isa(obj,'TIPPsubj') - main function call
-        obj = main_CNNstriatalSegmentation(obj);
+        obj = main_CNNStriatalSegmentation(obj);
     end
 
 end
 
-function [obj] = main_CNNstriatalSegmentation(obj)
+function [obj] = main_CNNStriatalSegmentation(obj)
     % For TIPPsubj only
     % Uses T1w_acpc_dc_restore_brain.nii, ac-pc aligned (acpc), readout distortion
     % corrected (dc), bias field corrected (restore), skull-stripped (brain), T1w images.
@@ -51,7 +46,7 @@ function [obj] = main_CNNstriatalSegmentation(obj)
     end
     T1_acpc_dc_restore_brain = imagesOfType{1}; %Get the char vector out of the cell
 
-%     imageType = 'NATbrainmask';
+%   imageType = 'NATbrainmask';
     imageType = 'MNIbrainmask';
 
     [imagesOfType] = getImagesOfType(obj,imageType,getFileNameBool);
@@ -61,7 +56,7 @@ function [obj] = main_CNNstriatalSegmentation(obj)
         error('No brain mask for a subject.')
     end
     nat_acpc_brainmask = imagesOfType{1};
-% 
+
 
     % Need to get a NATepi as a template
     imageType = 'NATepi';
@@ -82,16 +77,17 @@ function [obj] = main_CNNstriatalSegmentation(obj)
     end
     BOLD_template_image = imagesOfType{1};
 
-
-
-%
     segmentation_intermediate_directory = obj.home;
+    
+[store]=CNNStriatalSegmentation('T1_acpc_dc_restore_brain',T1_acpc_dc_restore_brain,...
+    'nat_acpc_brainmask',nat_acpc_brainmask,...
+    'BOLD_template_image',BOLD_template_image,...
+    'segmentation_intermediate_directory',segmentation_intermediate_directory);
 
-    %
-    segmentation_python_output_intermediate_filename = 'CNN_striatal_python_output_intermediate.mat';
-    segmentation_python_output_intermediate_fullpath = fullfile(segmentation_intermediate_directory , segmentation_python_output_intermediate_filename);
+    for i=2:length(store.fname)
+        obj.imgs(end+1) = TIPPimg(store.fname{i},store.imagetype{i});
+    end
+
 
     
-CNNStriatalSegmentation()
-
 end
