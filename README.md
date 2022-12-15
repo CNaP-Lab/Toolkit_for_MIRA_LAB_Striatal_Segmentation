@@ -1,4 +1,4 @@
-# Toolkit_for_MIRA_LAB_Striatal_Segmentation
+Toolkit_for_MIRA_LAB_Striatal_Segmentation - README file
 
 Table of Contents:
 
@@ -30,7 +30,7 @@ II. RUNNING INSTRUCTIONS:
 
 4. Adjust the necessary parameters in CNNStriatalSegmentation_call.m; supply the paths for the files and subfolders as instructed therein and as described below.
 
-	For each run of the pipeline involving different subjects, the following are required and the paths must be adjusted:						segmentation_intermediate_directory,t1_acpc_dc_restore_brain,nat_acpc_brainmask, and bold_template_image. 
+	For each run of the pipeline involving different subjects, the following are required and the paths must be adjusted:						segmentation_intermediate_directory,T1_acpc_dc_restore_brain,nat_acpc_brainmask, and BOLD_template_image. 
 		
 		Segmentation_intermediate_directory refers to the directory where all intermediate and final outputs of this CNN pipeline will be saved for each subject run. 
 
@@ -50,8 +50,8 @@ III. PIPELINE STEPS
 2. The structural MRI image (T1) is rotated 90 degree (with the getRotatedCNN_image subfunction).
 3. The brain mask is rotated 90 degrees (with the getRotatedCNN_image subfunction).
 4. The rotated T1 image is resliced according to the resolution of the CNN reslice template, using 7th degree spline interpolation in SPM (with the getReslicedCNN_image subfunction). In this reslicing run as well as in all future runs, wrapping is turned on in the x, y, and z directions. 
-5. The brain mask is rescued according to the resolution of the CNN reslice template, using nearest neighbor interpolation in SPM (with the getReslicedCNN_image subfunction).
-6. The brain mask is padded.
+5. The brain mask is resolved according to the resolution of the CNN reslice template, using nearest neighbor interpolation in SPM (with the getReslicedCNN_image subfunction).
+6. The brain mask is padded. The padding is governed by a 3-D cubic structuring element whose width is set at 3 pixels. The line, structuringElement = strel('cube',3), may be edited if the user seeks a bigger width of the structuring element or desires to use a different geometric shape. These changes may have an effect on the amount of segmentations observed. Excessive padding can erode the segmentations while no padding can introduce background signals that can blend with striatal segmentations. 
 7. Through the function pythonCNNstriatalSegmentation, the main script executes a python script (orig_mod_NNEval.py) that uses previously trained network weights to generate segmentations for the input T1 image. The T1 image is padded and 2 dimensions on each side of the image are added to achieve a 5 dimensional object [1x256x256x192x1]. 
 
 	The output of this python script is a .mat file, which contains 2 variables, out, which contains the raw segmentations, and mri, which contains 	the original image. After the python script returns the outputs, the out variable is squeezed.
@@ -80,4 +80,4 @@ Scipy: 1.9.
 
 SPM12 must be installed prior to running the pipeline. 
 
-Additionally, in order to run this pipeline, a T1-weighted structural MRI image in ACPC orientation, a NAT brain mask in ACPC orientation, and a bold functional MRI image are required, as described in step 4B in RUNNING INSTRUCTIONS. 
+Additionally, in order to run this pipeline, a T1-weighted structural MRI image in ACPC orientation, a NAT brain mask in ACPC orientation, and a bold functional MRI image are required, as described in step 4 in RUNNING INSTRUCTIONS. 
