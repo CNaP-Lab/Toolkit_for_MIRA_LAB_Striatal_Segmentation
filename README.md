@@ -18,7 +18,7 @@ This readme.txt covers a pipeline that produces CNN-based segmentations of the s
 
 This readme.txt will detail how this pipeline works (in a step-by-step fashion), running instructions, the dependencies required, and the parameters the user must adjust. This pipeline is based in MATLAB and python; much of the editable components are written in MATLAB. 
 
-The main operating script of the pipeline is main_CNNStriatalSegmentation.m. This script is called by CNNStriatalSegmentation_wrapper_script.m, which has a set of parameters that the user is instructed to adjust therein. Full running operations are discussed in the following section. 
+The main operating script of the pipeline is main_CNNStriatalSegmentation.m. This script is called by CNNStriatalSegmentation_wrapper_script.m, which has a set of parameters that the user is instructed to adjust therein. Full running operations are discussed in the second section, RUNNING INSTRUCTIONS. 
 
 INPUTS:
 1. T1-weighted structural MRI image in ACPC orientation
