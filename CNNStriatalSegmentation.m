@@ -6,10 +6,10 @@ function [obj] = CNNStriatalSegmentation(obj)
     if isa(obj,'TIPPstudy')
         numSubjects = length(obj.(obj.sub));
         for i = 1:numSubjects
-            obj.(obj.sub)(i).integrate_CNNStriatalSegmentation(); pause(eps); drawnow;
+            obj.(obj.sub)(i).CNNStriatalSegmentation(); pause(eps); drawnow;
         end
     elseif ~isa(obj,'TIPPsubj')
-        obj.par.integrate_CNNStriatalSegmentation();
+        obj.par.CNNStriatalSegmentation();
     else %isa(obj,'TIPPsubj') - main function call
         obj = TIPPinternal_CNNStriatalSegmentation(obj);
     end
@@ -79,7 +79,7 @@ function [obj] = TIPPinternal_CNNStriatalSegmentation(obj)
 
     segmentation_intermediate_directory = obj.home;
 
-    [store]=CNNStriatalSegmentation('T1_acpc_dc_restore_brain',T1_acpc_dc_restore_brain,...
+    [store]=main_CNNStriatalSegmentation('T1_acpc_dc_restore_brain',T1_acpc_dc_restore_brain,...
         'nat_acpc_brainmask',nat_acpc_brainmask,...
         'BOLD_template_image',BOLD_template_image,...
         'segmentation_intermediate_directory',segmentation_intermediate_directory);
