@@ -95,8 +95,13 @@ IV. REQUIRED DEPENDENCIES, PYTHON VERSION, AND OTHER FILES
 This pipeline was tested using the following versions of Python and libraries:
 
 Python: 2.7.5
+
 Tensorflow: 2.10.0
+
 Numpy: 1.23.2
+
 Nibabel: 4.0.2
+
 Scipy: 1.9.
+
 SPM12 must be installed and on the MATLAB path prior to running the pipeline. 
