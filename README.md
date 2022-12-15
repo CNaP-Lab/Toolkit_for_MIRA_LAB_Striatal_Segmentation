@@ -43,13 +43,10 @@ II. RUNNING INSTRUCTIONS:
 
 	For each run of the pipeline involving different subjects, the following are required and the paths must be adjusted:   segmentation_intermediate_directory,T1_acpc_dc_restore_brain,nat_acpc_brainmask, and BOLD_template_image. 
 		
-		Segmentation_intermediate_directory refers to the directory where all intermediate and final outputs of this CNN pipeline will be saved for each subject run. 
-
-		T1_acpc_dc_restore_brain refers to the path of the T1 weighted MRI image (in NAT space) relating to the subject used for this run.
-
-		Nat_acpc_brainmask refers to the path of the brain mask relating to the subject used for this run.
-
-		Bold_template_image refers to the path of the bold functional MRI image relating to the subject used for this run.
+		1. Segmentation_intermediate_directory refers to the directory where all intermediate and final outputs of this CNN pipeline will be saved for each subject run. 
+		2. T1_acpc_dc_restore_brain refers to the path of the T1 weighted MRI image (in NAT space) relating to the subject used for this run.
+		3. Nat_acpc_brainmask refers to the path of the brain mask relating to the subject used for this run.
+		4. Bold_template_image refers to the path of the bold functional MRI image relating to the subject used for this run.
 	
 5. Ensure SPM12 and tippVol are on your path in MATLAB and run the script CNNStriatalSegmentation_wrapper_script.m. 
 
@@ -75,52 +72,31 @@ III. PIPELINE STEPS
 11. An additional output image is generated so that the segmentations following step 9 are resliced according to the resolution of the BOLD images the user provided, using 7th degree spline interpolation. This second final output, intended for use with BOLD data, is BOLDRes_NATspace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii. 
 
 
-Below is a detailed sequential run-down of outputs generated during the pipeline, starting with the inputs:
-
 INPUTS:
 
-T1w_acpc_dc_restore_brain.nii
+	1. T1w_acpc_dc_restore_brain.nii
+	2. brainmask_fs.2.nii
+	3. fMRI.nii 
 
-brainmask_fs.2.nii
+OUTPUTS, INCLUDING INTERMEDIATES:
 
-fMRI.nii 
-
-OUTPUTS:
-
-striatalCNNrotated_brainmask_fs.2.nii
-
-striatalCNNrotated_T1w_acpc_dc_restore_brain.nii
-
-striatalCNNres_striatalCNNrotated_T1w_acpc_dc_restore_brain.nii
-
-striatalCNNres_striatalCNNrotated_brainmask_fs.2.nii
-
-CNN_striatal_python_output_intermediate.mat
-
-raw_StriatalCNNparcels.nii
-
-striatalCNN_unrotated_raw_StriatalCNNparcels.nii
-
-anatRes_NATspace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii
-
-BOLDRes_NATspace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii
-
-
+	1. striatalCNNrotated_brainmask_fs.2.nii
+	2. striatalCNNrotated_T1w_acpc_dc_restore_brain.nii
+	3. striatalCNNres_striatalCNNrotated_T1w_acpc_dc_restore_brain.nii
+	4. striatalCNNres_striatalCNNrotated_brainmask_fs.2.nii
+	5. CNN_striatal_python_output_intermediate.mat
+	6. raw_StriatalCNNparcels.nii
+	7. striatalCNN_unrotated_raw_StriatalCNNparcels.nii
+	8. anatRes_NATspace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii
+	9. BOLDRes_NATspace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii
 
 IV. REQUIRED DEPENDENCIES, PYTHON VERSION, AND OTHER FILES
 
 This pipeline was tested using the following versions of Python and libraries:
 
 Python: 2.7.5
-
 Tensorflow: 2.10.0
-
 Numpy: 1.23.2
-
 Nibabel: 4.0.2
-
 Scipy: 1.9.
-
 SPM12 must be installed and on the MATLAB path prior to running the pipeline. 
-
-Additionally, in order to run this pipeline, a T1-weighted structural MRI image in ACPC orientation, a NAT brain mask in ACPC orientation, and a bold functional MRI image are required, as described in step 4 in RUNNING INSTRUCTIONS. 
