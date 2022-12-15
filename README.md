@@ -26,8 +26,9 @@ INPUTS:
 3. Bold functional MRI image
 
 OUTPUTS*:
-1. BOLDRes_NATspace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii
-2. anatRes_NATspace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii
+1. anatRes_NATspace_striatalCNNparcels.nii
+2. BOLDRes_NATspace_striatalCNNparcels.nii
+
 
 *These are the final outputs of the pipeline, provided with exact file names. Several intermediates are also generated and discussed in PIPELINE STEPS. 
 
@@ -52,10 +53,10 @@ II. RUNNING INSTRUCTIONS:
 
 6. You may now inspect your final striatal segmentations for both your structural and functional images, found in the segmentation_intermediate_directory (whose path you edited in CNNStriatalSegmentation_wrapper_script.m from step 5), in an image viewer of your choice. Our team used MRIcron, a free tool readily available at: https://www.nitrc.org/projects/mricron. The directory also contains intermediates generated in the pipeline, which may be viewed. 
 
-The final anatomical segmentation mask is named: anatRes_NATspace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii.
+The final anatomical segmentation mask is named: anatRes_NATspace_striatalCNNparcels.nii.
 
 The final BOLD segmentation mask is named:
-BOLDRes_NATspace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii.
+BOLDRes_NATspace_striatalCNNparcels.nii.
 
 III. PIPELINE STEPS
 
@@ -68,8 +69,8 @@ III. PIPELINE STEPS
 7. Through the function pythonCNNstriatalSegmentation, the main script executes a python script (orig_mod_NNEval.py) that uses previously trained network weights to generate segmentations for the input T1 image. The T1 image is padded and 2 dimensions on each side of the image are added to achieve a 5 dimensional object [1x256x256x192x1]. The output of this python script is a .mat file, which contains 2 variables, out, which contains the raw segmentations, and mri, which contains the original image. After the python script returns the outputs, the out variable is squeezed. The .mat file generated from the the python script is: CNN_striatal_python_output_intermediate.mat.
 8. This .mat file is processed with the segmentation_postprocessing subfunction. Out has a size of 256x256x192x6, where 6 represents the segmentation layers, including 1 for background. In the first step, the padded elements are removed and out’s size changes to 234x234x156x6. Next, the cnn network produced probability distributions ranging from 0-1 are converted into discrete values (0 or 1). Then, instead of each voxel being assigned to a probability estimate based on the likelihood of being in each striatal layer, each voxel is only assigned to 1 striatal region using the max function. This avoids overlapping segmentations and ensures each striatal region is specific and based on voxels that exist in that region. The intermediate generated at the end of this step is: raw_StriatalCNNparcels.nii. 
 9. The image containing the striatal segmentations is rotated 90 degrees in the direction opposite of that from step 2. The generated intermediate is: striatalCNN_unrotated_raw_StriatalCNNparcels.nii.
-10. The segmentations are resliced according to the resolution of the original T1 weighted MRI image input using 7th degree spline interpolation in SPM. The first final output, anatRes_NATspace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii, is generated. 
-11. An additional output image is generated so that the segmentations following step 9 are resliced according to the resolution of the BOLD images the user provided, using 7th degree spline interpolation. This second final output, intended for use with BOLD data, is BOLDRes_NATspace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii. 
+10. The segmentations are resliced according to the resolution of the original T1 weighted MRI image input using 7th degree spline interpolation in SPM. The first final output, anatRes_NATspace_striatalCNNparcels.nii, is generated. 
+11. An additional output image is generated so that the segmentations following step 9 are resliced according to the resolution of the BOLD images the user provided, using 7th degree spline interpolation. This second final output, intended for use with BOLD data, is BOLDRes_NATspace_striatalCNNparcels.nii. 
 
 
 INPUTS:
@@ -87,8 +88,8 @@ OUTPUTS, INCLUDING INTERMEDIATES:
 	5. CNN_striatal_python_output_intermediate.mat
 	6. raw_StriatalCNNparcels.nii
 	7. striatalCNN_unrotated_raw_StriatalCNNparcels.nii
-	8. anatRes_NATspace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii
-	9. BOLDRes_NATspace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii
+	8. anatRes_NATspace_striatalCNNparcels.nii
+	9. BOLDRes_NATspace_striatalCNNparcels.nii
 
 IV. REQUIRED DEPENDENCIES, PYTHON VERSION, AND OTHER FILES
 
