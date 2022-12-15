@@ -89,9 +89,9 @@ function [store] = main_CNNStriatalSegmentation(varargin)
     isMask = true;
     [store,BOLDRes_NATspace_striatalCNNparcels] = getReslicedCNN_image(store,unrotatedCNN_segmentation,BOLD_template_image,imageType,imagePrefix,isMask);
 
-movefile([segmentation_intermediate_directory ‘/anatRes_NATspace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii’],[segmentation_intermediate_directory ‘/anatRes_NATspace_striatalCNNparcels.nii’]);
+movefile([segmentation_intermediate_directory '/anatRes_NATspace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii'],[segmentation_intermediate_directory '/anatRes_NATspace_striatalCNNparcels.nii']);
 
-movefile([segmentation_intermediate_directory ‘/BOLDRes_NATspace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii’],[segmentation_intermediate_directory ‘/BOLDRes_NATspace_striatalCNNparcels.nii’]);
+movefile([segmentation_intermediate_directory '/BOLDRes_NATspace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii'],[segmentation_intermediate_directory '/BOLDRes_NATspace_striatalCNNparcels.nii']);
 
 
     disp('Full striatal segmentation pipeline complete.');  pause(eps); drawnow;
