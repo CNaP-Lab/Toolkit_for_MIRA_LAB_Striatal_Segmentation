@@ -2,7 +2,7 @@ Toolkit_for_MIRA_LAB_Striatal_Segmentation - README file
 
 Table of Contents:
 
-I. SUMMARYntermediate_
+I. SUMMARY
 
 II. RUNNING INSTRUCTIONS
 
