@@ -2,7 +2,7 @@ Toolkit_for_MIRA_LAB_Striatal_Segmentation - README file
 
 Table of Contents:
 
-I. SUMMARY
+I. SUMMARYntermediate_
 
 II. RUNNING INSTRUCTIONS
 
@@ -14,24 +14,31 @@ IV. REQUIRED DEPENDENCIES, PYTHON VERSION, AND OTHER FILES
 
 I. SUMMARY
 
-This readme.txt covers a pipeline that produces CNN-based segmentations of the striatal regions of the brain for given structural and functional MRI images the user provides. The striatal regions segmented are the: ventral striatum, pre-commissural putamen, post-commissural putamen, pre-commissural caudate, post-commissural caudate. The user provides a T1-weighted structural MRI image in ACPC orientation, a NAT brain mask in ACPC orientation, and a bold functional MRI image, in order to produce 2 final products: a NIFTI file containing segmentations that can be overlaid on the T1 image and a NIFTI file containing segmentations that can be overlaid on the fMRI image.
+This readme.txt covers a pipeline that produces CNN-based segmentations of the striatal regions of the brain for given structural and functional MRI images the user provides. The striatal regions segmented are the: ventral striatum, pre-commissural putamen, post-commissural putamen, pre-commissural caudate, post-commissural caudate. The readme details how this pipeline works (in a step-by-step fashion), running instructions, the dependencies required, and the parameters the user must adjust. This pipeline is based in MATLAB and python; much of the editable components are written in MATLAB. 
 
-This readme.txt will detail how this pipeline works (in a step-by-step fashion), running instructions, the dependencies required, and the parameters the user must adjust. This pipeline is based in MATLAB and python; much of the editable components are written in MATLAB. 
+The user provides a T1-weighted structural MRI image in ACPC orientation, a NAT brain mask in ACPC orientation, and, optionally, a BOLD functional MRI template image
+
+The following outputs are produced: a NIfTI image containing segmentations that can be overlaid on the T1 image and, if the optional BOLD fMRI template image was specified, an additional NIfTI imagecontaining segmentations that can be overlaid on the fMRI image.
 
 The main operating script of the pipeline is main_CNNStriatalSegmentation.m. This script is called by CNNStriatalSegmentation_wrapper_script.m, which has a set of parameters that the user is instructed to adjust therein. Full running operations are discussed in the second section, RUNNING INSTRUCTIONS. 
 
 INPUTS:
 1. T1-weighted structural MRI image in ACPC orientation
 2. NAT brain mask in ACPC orientation
-3. Bold functional MRI image
+3. Output directory
+4. OPTIONAL: BOLD functional MRI image
 
 OUTPUTS*:
 1. anatRes_NATspace_striatalCNNparcels.nii
-2. BOLDRes_NATspace_striatalCNNparcels.nii
-
+2. OPTIONAL: BOLDRes_NATspace_striatalCNNparcels.nii
 
 *These are the final outputs of the pipeline, provided with exact file names. Several intermediates are also generated and discussed in PIPELINE STEPS. 
 
+EXAMPLE:
+main_CNNStriatalSegmentation('T1_acpc_dc_restore_brain',T1_acpc_dc_restore_brain, ...
+    'nat_acpc_brainmask',nat_acpc_brainmask, ...
+    'segmentation_outputs_directory',segmentation_outputs_directory, ...
+    'BOLD_template_image',BOLD_template_image);
 
 II. RUNNING INSTRUCTIONS:
 1. Prior to downloading this GitHub repository on your system, ensure that you have the right versions of Python and required dependencies on your system. Refer to REQUIRED DEPENDENCIES, PYTHON VERSION, AND OTHER FILES, to ensure you have the proper versions of Python and required libraries. Please also ensure you have SPM12 on your system, which may be downloaded here: https://www.fil.ion.ucl.ac.uk/spm/software/spm12/.
@@ -42,20 +49,21 @@ II. RUNNING INSTRUCTIONS:
 
 4. Adjust the necessary parameters in CNNStriatalSegmentation_wrapper_script.m; supply the paths for the files and subfolders as instructed therein and as described below.
 
-	For each run of the pipeline involving different subjects, the following are required and the paths must be adjusted:   segmentation_intermediate_directory,T1_acpc_dc_restore_brain,nat_acpc_brainmask, and BOLD_template_image. 
+	For each run of the pipeline involving different subjects, the following are required and the paths must be adjusted:   segmentation_outputs_directory, T1_acpc_dc_restore_brain,nat_acpc_brainmask.  The following input is optional: BOLD_template_image. 
 		
-		1. Segmentation_intermediate_directory refers to the directory where all intermediate and final outputs of this CNN pipeline will be saved for each subject run. 
+		1. segmentation_outputs_directory refers to the directory where all final and intermediate outputs of this CNN pipeline will be saved for each subject run. 
 		2. T1_acpc_dc_restore_brain refers to the path of the T1 weighted MRI image (in NAT space) relating to the subject used for this run.
 		3. Nat_acpc_brainmask refers to the path of the brain mask relating to the subject used for this run.
 		4. Bold_template_image refers to the path of the bold functional MRI image relating to the subject used for this run.
 	
 5. Ensure SPM12 and tippVol are on your path in MATLAB and run the script CNNStriatalSegmentation_wrapper_script.m. 
 
-6. You may now inspect your final striatal segmentations for both your structural and functional images, found in the segmentation_intermediate_directory (whose path you edited in CNNStriatalSegmentation_wrapper_script.m from step 5), in an image viewer of your choice. Our team used MRIcron, a free tool readily available at: https://www.nitrc.org/projects/mricron. The directory also contains intermediates generated in the pipeline, which may be viewed. 
+6. You may now inspect your final striatal segmentations for both your structural and functional images, found in the segmentation_outputs_directory (whose path you edited in CNNStriatalSegmentation_wrapper_script.m from step 5), in an image viewer of your choice. Our team used MRIcron, a free tool readily available at: https://www.nitrc.org/projects/mricron. The directory also contains intermediates generated in the pipeline, which may be viewed. 
 
-The final anatomical segmentation mask is named: anatRes_NATspace_striatalCNNparcels.nii.
+The final anatomical resolution segmentation mask is named: 
+anatRes_NATspace_striatalCNNparcels.nii.
 
-The final BOLD segmentation mask is named:
+If the optional BOLD fMRI template image is specified, the final BOLD fMRI resolution segmentation mask is additionally produced and named:
 BOLDRes_NATspace_striatalCNNparcels.nii.
 
 III. PIPELINE STEPS
@@ -70,14 +78,15 @@ III. PIPELINE STEPS
 8. This .mat file is processed with the segmentation_postprocessing subfunction. Out has a size of 256x256x192x6, where 6 represents the segmentation layers, including 1 for background. In the first step, the padded elements are removed and out’s size changes to 234x234x156x6. Next, the cnn network produced probability distributions ranging from 0-1 are converted into discrete values (0 or 1). Then, instead of each voxel being assigned to a probability estimate based on the likelihood of being in each striatal layer, each voxel is only assigned to 1 striatal region using the max function. This avoids overlapping segmentations and ensures each striatal region is specific and based on voxels that exist in that region. The intermediate generated at the end of this step is: raw_StriatalCNNparcels.nii. 
 9. The image containing the striatal segmentations is rotated 90 degrees in the direction opposite of that from step 2. The generated intermediate is: striatalCNN_unrotated_raw_StriatalCNNparcels.nii.
 10. The segmentations are resliced according to the resolution of the original T1 weighted MRI image input using 7th degree spline interpolation in SPM. The first final output, anatRes_NATspace_striatalCNNparcels.nii, is generated. 
-11. An additional output image is generated so that the segmentations following step 9 are resliced according to the resolution of the BOLD images the user provided, using 7th degree spline interpolation. This second final output, intended for use with BOLD data, is BOLDRes_NATspace_striatalCNNparcels.nii. 
+11. (Optional) If the user specifies a BOLD fMRI template image, thena n additional output image is generated so that the segmentations following step 9 are resliced according to the resolution of the BOLD image, using 7th degree spline interpolation. This second final output is BOLDRes_NATspace_striatalCNNparcels.nii. 
 
 
 INPUTS:
 
 	1. T1w_acpc_dc_restore_brain.nii
 	2. brainmask_fs.2.nii
-	3. fMRI.nii 
+    3. Output directory
+	4. fMRI.nii (optional)
 
 OUTPUTS, INCLUDING INTERMEDIATES:
 
@@ -89,7 +98,7 @@ OUTPUTS, INCLUDING INTERMEDIATES:
 	6. raw_StriatalCNNparcels.nii
 	7. striatalCNN_unrotated_raw_StriatalCNNparcels.nii
 	8. anatRes_NATspace_striatalCNNparcels.nii
-	9. BOLDRes_NATspace_striatalCNNparcels.nii
+	9. BOLDRes_NATspace_striatalCNNparcels.nii (optional)
 
 IV. REQUIRED DEPENDENCIES, PYTHON VERSION, AND OTHER FILES
 

@@ -1,2 +1,2 @@
-model_checkpoint_path: "/mnt/jxvs2_02/neil/StriatalSegmentation/model"
-all_model_checkpoint_paths: "/mnt/jxvs2_02/neil/StriatalSegmentation/model"
+model_checkpoint_path: "/mnt/jxvs2_01/Thal_Loc_Data/RDoC_Analysis/Code/Toolkit_for_MIRA_LAB_Striatal_Segmentation/StriatalSegmentation/model"
+all_model_checkpoint_paths: "/mnt/jxvs2_01/Thal_Loc_Data/RDoC_Analysis/Code/Toolkit_for_MIRA_LAB_Striatal_Segmentation/StriatalSegmentation/model"

@@ -92,6 +92,7 @@ new_saver=tf.train.Saver()
 sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
 # the below is where the network weights are located provided by user input 
+print(sys.argv[3])
 new_saver.restore(sess,tf.train.latest_checkpoint(sys.argv[3]))
 print("Loaded Weights")
 

@@ -22,6 +22,7 @@ function [store] = main_CNNStriatalSegmentation(varargin)
     %% end of new part
     numArgIn = length(varargin);
     currentArgNumber = 1;
+    [T1_acpc_dc_restore_brain, nat_acpc_brainmask, segmentation_outputs_directory, BOLD_template_image] = deal([]);
     while (currentArgNumber <= numArgIn)
         StringCurrentArg = (string(varargin{currentArgNumber}));
         numToAdd = 2;
@@ -30,8 +31,8 @@ function [store] = main_CNNStriatalSegmentation(varargin)
                 T1_acpc_dc_restore_brain = varargin{currentArgNumber + 1};
             case "nat_acpc_brainmask"
                 nat_acpc_brainmask = varargin{currentArgNumber + 1};
-            case "segmentation_intermediate_directory"
-                segmentation_intermediate_directory = varargin{currentArgNumber + 1};
+            case "segmentation_outputs_directory"
+                segmentation_outputs_directory = varargin{currentArgNumber + 1};
             case "BOLD_template_image"
                 BOLD_template_image = varargin{currentArgNumber + 1};
             otherwise
@@ -39,12 +40,30 @@ function [store] = main_CNNStriatalSegmentation(varargin)
         end
         currentArgNumber = currentArgNumber + numToAdd;
     end
-    disp('Read all arguments')
+    disp('Read all arguments'); pause(eps); drawnow;
+
+    if ~exist(segmentation_outputs_directory, 'dir')
+        mkdir(segmentation_outputs_directory)
+    end
+    
+    copyfile(T1_acpc_dc_restore_brain,segmentation_outputs_directory);
+    [a,b,c] = fileparts(T1_acpc_dc_restore_brain);
+    T1_acpc_dc_restore_brain = fullfile(segmentation_outputs_directory, [b c]);
+
+    copyfile(nat_acpc_brainmask,segmentation_outputs_directory);
+    [a,b,c] = fileparts(nat_acpc_brainmask);
+    nat_acpc_brainmask = fullfile(segmentation_outputs_directory, [b c]);
+
+    if (~isempty(BOLD_template_image))
+        copyfile(BOLD_template_image,segmentation_outputs_directory);
+        [a,b,c] = fileparts(BOLD_template_image);
+        BOLD_template_image = fullfile(segmentation_outputs_directory, [b c]);
+    end
 
     imageType = 'striatalCNNrotated_NATt1brain';
-    [store,rotatedCNN_T1] = getRotatedCNN_image(store,T1_acpc_dc_restore_brain,imageType,'toCNN');
+    [store,rotatedCNN_T1] = getRotatedCNN_image(store,T1_acpc_dc_restore_brain,segmentation_outputs_directory,imageType,'toCNN');
     imageType = 'striatalCNNrotated_NATbrainmask';
-    [store,rotatedCNN_brainmask] = getRotatedCNN_image(store,nat_acpc_brainmask,imageType,'toCNN');
+    [store,rotatedCNN_brainmask] = getRotatedCNN_image(store,nat_acpc_brainmask,segmentation_outputs_directory,imageType,'toCNN');
 
 
     imageType = 'striatalCNNres_striatalCNNrotated_NATt1brain';
@@ -57,7 +76,7 @@ function [store] = main_CNNStriatalSegmentation(varargin)
     [store,reslicedRotatedCNN_brainmask] = getReslicedCNN_image(store,rotatedCNN_brainmask,CNN_reslice_template,imageType,imagePrefix,isMask);
 
     segmentation_python_output_intermediate_filename = 'CNN_striatal_python_output_intermediate.mat';
-    segmentation_python_output_intermediate_fullpath = fullfile(segmentation_intermediate_directory , segmentation_python_output_intermediate_filename);
+    segmentation_python_output_intermediate_fullpath = fullfile(segmentation_outputs_directory , segmentation_python_output_intermediate_filename);
 
     % Padding the brain mask
     [VV_reslicedRotatedCNN_brainmask,YY_reslicedRotatedCNN_brainmask] = tippVol(reslicedRotatedCNN_brainmask);
@@ -72,41 +91,42 @@ function [store] = main_CNNStriatalSegmentation(varargin)
     padded_brain_mask = logical(YY_reslicedRotatedCNN_brainmask);
     eroded_padded_brain_mask = imerode(padded_brain_mask,structuringElement); %3D erosion once
 
-    [out,mri] = pythonCNNstriatalSegmentation(segmentation_python_code , reslicedRotatedCNN_T1, segmentation_python_output_intermediate_fullpath, segmentation_directory);
+    [out,mri] = pythonCNNstriatalSegmentation(segmentation_python_code , reslicedRotatedCNN_T1, segmentation_python_output_intermediate_fullpath, segmentation_directory, segmentation_outputs_directory);
 
-    [store,raw_segmentation_filename] = segmentation_postprocessing(store,out,mri,eroded_padded_brain_mask,VV_reslicedRotatedCNN_brainmask,segmentation_intermediate_directory);
+    [store,raw_segmentation_filename] = segmentation_postprocessing(store,out,mri,eroded_padded_brain_mask,VV_reslicedRotatedCNN_brainmask,segmentation_outputs_directory);
 
     imageType = 'unrotated_striatalCNN_segmentation';
-    [store,unrotatedCNN_segmentation] = getRotatedCNN_image(store,raw_segmentation_filename,imageType,'toACPC');
+    [store,unrotatedCNN_segmentation] = getRotatedCNN_image(store,raw_segmentation_filename,segmentation_outputs_directory,imageType,'toACPC');
 
     imageType = 'anatRes_NATspace_striatalCNNparcels';
     imagePrefix = [imageType '_'];
     isMask = true;
     [store,anatRes_NATspace_striatalCNNparcels] = getReslicedCNN_image(store,unrotatedCNN_segmentation,T1_acpc_dc_restore_brain,imageType,imagePrefix,isMask);
 
-    imageType = 'BOLDRes_NATspace_striatalCNNparcels';
-    imagePrefix = [imageType '_'];
-    isMask = true;
-    [store,BOLDRes_NATspace_striatalCNNparcels] = getReslicedCNN_image(store,unrotatedCNN_segmentation,BOLD_template_image,imageType,imagePrefix,isMask);
+    movefile([segmentation_outputs_directory '/anatRes_NATspace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii'],[segmentation_outputs_directory '/anatRes_NATspace_striatalCNNparcels.nii']);
 
-movefile([segmentation_intermediate_directory '/anatRes_NATspace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii'],[segmentation_intermediate_directory '/anatRes_NATspace_striatalCNNparcels.nii']);
+    if(~isempty(BOLD_template_image))
+        imageType = 'BOLDRes_NATspace_striatalCNNparcels';
+        imagePrefix = [imageType '_'];
+        isMask = true;
+        [store,BOLDRes_NATspace_striatalCNNparcels] = getReslicedCNN_image(store,unrotatedCNN_segmentation,BOLD_template_image,imageType,imagePrefix,isMask);
 
-movefile([segmentation_intermediate_directory '/BOLDRes_NATspace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii'],[segmentation_intermediate_directory '/BOLDRes_NATspace_striatalCNNparcels.nii']);
-
+        movefile([segmentation_outputs_directory '/BOLDRes_NATspace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii'],[segmentation_outputs_directory '/BOLDRes_NATspace_striatalCNNparcels.nii']);
+    end
 
     disp('Full striatal segmentation pipeline complete.');  pause(eps); drawnow;
 
 
 
-    function [store,rotatedFileText] = getRotatedCNN_image(store,T1_filename,imageType,direction)
+    function [store,rotatedFileText] = getRotatedCNN_image(store,T1_filename,segmentation_outputs_directory,imageType,direction)
         %Rotate 90 deg
         [a,b,c] = fileparts(T1_filename);
         if (strcmpi(direction,'toCNN'))
             ang = pi/2;
-            rotatedFileText = fullfile(a, ['striatalCNNrotated_' b c]);
+            rotatedFileText = fullfile(segmentation_outputs_directory, ['striatalCNNrotated_' b c]);
         elseif (strcmpi(direction,'toACPC'))
             ang = -pi/2;
-            rotatedFileText = fullfile(a, ['striatalCNN_unrotated_' b c]);
+            rotatedFileText = fullfile(segmentation_outputs_directory, ['striatalCNN_unrotated_' b c]);
         end
         MM = [1 0 0 0; 0 cos(ang) sin(ang) 0; 0 -sin(ang) cos(ang) 0; 0 0 0 1];
         [VV,YY] = tippVol(T1_filename);
@@ -162,7 +182,7 @@ movefile([segmentation_intermediate_directory '/BOLDRes_NATspace_striatalCNNparc
     end
 
 
-    function [out,mri] = pythonCNNstriatalSegmentation(segmentation_python_code , T1_acpc_restore_brain, segmentation_python_output_intermediate_fullpath, segmentation_network_weights_directory)
+    function [out,mri] = pythonCNNstriatalSegmentation(segmentation_python_code , T1_acpc_restore_brain, segmentation_python_output_intermediate_fullpath, segmentation_network_weights_directory, segmentation_outputs_directory)
         disp('Deploying CNN Striatal Segmentation python script.'); pause(eps); drawnow;
 
         %call the python script that generates the striatal segmentations,
@@ -170,6 +190,29 @@ movefile([segmentation_intermediate_directory '/BOLDRes_NATspace_striatalCNNparc
         if(exist(segmentation_python_output_intermediate_fullpath,'file'))
             delete(segmentation_python_output_intermediate_fullpath); pause(eps); drawnow;
         end
+        segmentation_model_file = fullfile(segmentation_network_weights_directory,'model');
+        checkpointFilePath = fullfile(segmentation_network_weights_directory,'checkpoint');
+        checkpointFileString = sprintf([...
+            'model_checkpoint_path: "' segmentation_model_file '"' '\n' ...
+            'all_model_checkpoint_paths: "' segmentation_model_file '"' '\n' ...
+            ]);
+        try
+            checkpointFileText = fileread(checkpointFilePath);
+            if(strcmp(checkpointFileText,checkpointFileString))
+                checkpointFileMatch = true;
+            else
+                checkpointFileMatch = false;
+            end
+        catch err
+            checkpointFileMatch = false;
+        end
+
+        if(~checkpointFileMatch)
+            fileID = fopen(checkpointFilePath,'w+'); pause(eps); drawnow;
+            fprintf(fileID,checkpointFileString); pause(eps); drawnow;
+            fclose(fileID); pause(eps); drawnow;
+        end
+
         pythonCallString = ['python3 ' segmentation_python_code ' ' T1_acpc_restore_brain ' ' segmentation_python_output_intermediate_fullpath ' ' segmentation_network_weights_directory];
         [status,cmdout] = system(pythonCallString,'-echo'); pause(eps); drawnow;
         a = load(segmentation_python_output_intermediate_fullpath);
@@ -179,7 +222,7 @@ movefile([segmentation_intermediate_directory '/BOLDRes_NATspace_striatalCNNparc
         pause(eps); drawnow;
     end
 
-    function [store,raw_segmentation_filename] = segmentation_postprocessing(store,out,mri,eroded_padded_brain_mask,VV_reslicedRotatedCNN_brainmask,segmentation_intermediate_directory)
+    function [store,raw_segmentation_filename] = segmentation_postprocessing(store,out,mri,eroded_padded_brain_mask,VV_reslicedRotatedCNN_brainmask,segmentation_outputs_directory)
         % After previous step, we get a.out in size of 256x256x192x6, where
         % 6 represents the segmentation layers, including 1 for background.
 
@@ -221,7 +264,7 @@ movefile([segmentation_intermediate_directory '/BOLDRes_NATspace_striatalCNNparc
         out(outsideOfMask) = 0;
         % disp('erosion removed here');
 
-        raw_segmentation_filename = [segmentation_intermediate_directory '/' 'raw_StriatalCNNparcels.nii'];
+        raw_segmentation_filename = [segmentation_outputs_directory '/' 'raw_StriatalCNNparcels.nii'];
 
         VV_reslicedRotatedCNN_brainmask.fname = raw_segmentation_filename;
         if( exist(raw_segmentation_filename,'file') )
