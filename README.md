@@ -20,7 +20,7 @@ IV. REQUIRED DEPENDENCIES
 
 I. SUMMARY
 
-This is a pipeline that produces CNN-based segmentations of the striatal regions of the brain for given structural and functional MRI images the user provides, using the algorithm described in:
+This is a pipeline that produces CNN-based segmentations of the striatal regions of the brain based on a structural T1w image, using the algorithm described in:
 
 Serrano-Sosa M, Van Snellenberg JX, Meng J, Luceno JR, Spuhler K, Weinstein JJ, Abi-Dargham A, Slifstein M, Huang C. Multitask Learning Based Three-Dimensional Striatal Segmentation of MRI: fMRI and PET Objective Assessments. J Magn Reson Imaging. 2021 Nov;54(5):1623-1635. doi: 10.1002/jmri.27682. Epub 2021 May 10. PMID: 33970510; PMCID: PMC9204799.
 
