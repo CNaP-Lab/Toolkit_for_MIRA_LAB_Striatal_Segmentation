@@ -14,7 +14,7 @@ II. RUNNING INSTRUCTIONS
 
 III. PIPELINE STEPS
 
-IV. REQUIRED DEPENDENCIES, PYTHON VERSION, AND OTHER FILES
+IV. REQUIRED DEPENDENCIES
 	
 ----------------------------------------------------------------------------------------------
 
