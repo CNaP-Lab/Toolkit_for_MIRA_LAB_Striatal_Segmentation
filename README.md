@@ -14,29 +14,31 @@ IV. REQUIRED DEPENDENCIES, PYTHON VERSION, AND OTHER FILES
 
 I. SUMMARY
 
-This readme.txt covers a pipeline that produces CNN-based segmentations of the striatal regions of the brain for given structural and functional MRI images the user provides. The striatal regions segmented are the: ventral striatum, pre-commissural putamen, post-commissural putamen, pre-commissural caudate, post-commissural caudate. The readme details how this pipeline works (in a step-by-step fashion), running instructions, the dependencies required, and the parameters the user must adjust. This pipeline is based in MATLAB and python; much of the editable components are written in MATLAB. 
+This readme.txt covers a pipeline that produces CNN-based segmentations of the striatal regions of the brain for given structural and functional MRI images the user provides. The striatal regions segmented are the: ventral striatum, pre-commissural putamen, post-commissural putamen, pre-commissural caudate, post-commissural caudate.
 
-The user provides a T1-weighted structural MRI image in ACPC orientation, a NAT brain mask in ACPC orientation, and, optionally, a BOLD functional MRI template image
+The user provides a T1-weighted structural MRI image in ACPC orientation, a corresponding brain mask in ACPC orientation, and, optionally, a BOLD functional MRI template image for use in reslicing the outputs to BOLD resolution.
 
-The following outputs are produced: a NIfTI image containing segmentations that can be overlaid on the T1 image and, if the optional BOLD fMRI template image was specified, an additional NIfTI imagecontaining segmentations that can be overlaid on the fMRI image.
+The following outputs are produced: a NIfTI image containing segmentations that can be overlaid on the T1 image and, if the optional BOLD fMRI template image was specified, an additional NIfTI image containing segmentations that can be overlaid on the fMRI image.
 
 The main operating script of the pipeline is main_CNNStriatalSegmentation.m. This script is called by CNNStriatalSegmentation_wrapper_script.m, which has a set of parameters that the user is instructed to adjust therein. Full running operations are discussed in the second section, RUNNING INSTRUCTIONS. 
 
+SPM12 must be on your MATLAB path for this to work.  You can download it from https://www.fil.ion.ucl.ac.uk/spm/software/download/ .
+
 INPUTS:
-1. T1-weighted structural MRI image in ACPC orientation
-2. NAT brain mask in ACPC orientation
+1. T1-weighted structural MRI image in ACPC orientation (normalized to MNI space or otherwise), e.g., MNINonLinear/T1w_restore_brain.nii
+2. Template brain mask in ACPC orientation, in the same space as the T1w template
 3. Output directory
-4. OPTIONAL: BOLD functional MRI image
+4. OPTIONAL: BOLD functional MRI image, in the same space and orientation as the T1w template image, but in any desired resolution.  This impace will be used to reslice the outputs, generated from high-resolution anatomical T1w images, to the resolution of the desired BOLD image.
 
 OUTPUTS*:
-1. anatRes_NATspace_striatalCNNparcels.nii
-2. OPTIONAL: BOLDRes_NATspace_striatalCNNparcels.nii
+1. anatRes_templateSpace_striatalCNNparcels.nii
+2. OPTIONAL: BOLDRes_templateSpace_striatalCNNparcels.nii
 
-*These are the final outputs of the pipeline, provided with exact file names. Several intermediates are also generated and discussed in PIPELINE STEPS. 
+Several intermediates are also generated and discussed in PIPELINE STEPS. 
 
 EXAMPLE:
-main_CNNStriatalSegmentation('T1_acpc_dc_restore_brain',T1_acpc_dc_restore_brain, ...
-    'nat_acpc_brainmask',nat_acpc_brainmask, ...
+main_CNNStriatalSegmentation('T1_acpc_template_brain',T1_acpc_template_brain, ...
+    'template_acpc_brainmask',template_acpc_brainmask, ...
     'segmentation_outputs_directory',segmentation_outputs_directory, ...
     'BOLD_template_image',BOLD_template_image);
 
@@ -49,11 +51,11 @@ II. RUNNING INSTRUCTIONS:
 
 4. Adjust the necessary parameters in CNNStriatalSegmentation_wrapper_script.m; supply the paths for the files and subfolders as instructed therein and as described below.
 
-	For each run of the pipeline involving different subjects, the following are required and the paths must be adjusted:   segmentation_outputs_directory, T1_acpc_dc_restore_brain,nat_acpc_brainmask.  The following input is optional: BOLD_template_image. 
+	For each run of the pipeline involving different subjects, the following are required and the paths must be adjusted:   segmentation_outputs_directory, T1_acpc_template_brain,template_acpc_brainmask.  The following input is optional: BOLD_template_image. 
 		
 		1. segmentation_outputs_directory refers to the directory where all final and intermediate outputs of this CNN pipeline will be saved for each subject run. 
-		2. T1_acpc_dc_restore_brain refers to the path of the T1 weighted MRI image (in NAT space) relating to the subject used for this run.
-		3. Nat_acpc_brainmask refers to the path of the brain mask relating to the subject used for this run.
+		2. T1_acpc_template_brain refers to the path of the T1 weighted MRI image (in NAT space) relating to the subject used for this run.
+		3. template_acpc_brainmask refers to the path of the brain mask relating to the subject used for this run.
 		4. Bold_template_image refers to the path of the bold functional MRI image relating to the subject used for this run.
 	
 5. Ensure SPM12 and tippVol are on your path in MATLAB and run the script CNNStriatalSegmentation_wrapper_script.m. 
@@ -61,24 +63,24 @@ II. RUNNING INSTRUCTIONS:
 6. You may now inspect your final striatal segmentations for both your structural and functional images, found in the segmentation_outputs_directory (whose path you edited in CNNStriatalSegmentation_wrapper_script.m from step 5), in an image viewer of your choice. Our team used MRIcron, a free tool readily available at: https://www.nitrc.org/projects/mricron. The directory also contains intermediates generated in the pipeline, which may be viewed. 
 
 The final anatomical resolution segmentation mask is named: 
-anatRes_NATspace_striatalCNNparcels.nii.
+anatRes_templateSpace_striatalCNNparcels.nii.
 
 If the optional BOLD fMRI template image is specified, the final BOLD fMRI resolution segmentation mask is additionally produced and named:
-BOLDRes_NATspace_striatalCNNparcels.nii.
+BOLDRes_templateSpace_striatalCNNparcels.nii.
 
 III. PIPELINE STEPS
 
 1. The main script (main_CNNStriatalSegmentation.m) reads arguments given by the user in CNNStriatalSegmentation_wrapper_script.m for the paths of two categories of objects: the inputs to the pipeline and internal files/working directories for the pipeline.
-2. The structural MRI image (T1) is rotated 90 degree (with the getRotatedCNN_image subfunction). An intermediate is generated: striatalCNNrotated_T1w_acpc_dc_restore_brain.nii.
-3. The brain mask is rotated 90 degrees (with the getRotatedCNN_image subfunction). An intermediate is generated: striatalCNNrotated_brainmask_fs.2.nii.
-4. The rotated T1 image is resliced according to the resolution of the CNN reslice template, using 7th degree spline interpolation in SPM (with the getReslicedCNN_image subfunction). In this reslicing run as well as in all future runs, wrapping is turned on in the x, y, and z directions. An intermediate is generated: striatalCNNres_striatalCNNrotated_T1w_acpc_dc_restore_brain.nii.
-5. The brain mask is resliced according to the resolution of the CNN reslice template, using nearest neighbor interpolation in SPM (with the getReslicedCNN_image subfunction). An intermediate is generated: striatalCNNres_striatalCNNrotated_brainmask_fs.2.nii.
+2. The structural MRI image (T1) is rotated 90 degree (with the getRotatedCNN_image subfunction). An intermediate is generated from the T1 template image, with the prefix: striatalCNNrotated_.
+3. The brain mask is rotated 90 degrees (with the getRotatedCNN_image subfunction). An intermediate is generated from the brain mask, with the prefix: striatalCNNrotated_.
+4. The rotated T1 image is resliced according to the resolution of the CNN reslice template, using 7th degree spline interpolation in SPM (with the getReslicedCNN_image subfunction). In this reslicing run as well as in all future runs, wrapping is turned on in the x, y, and z directions. An intermediate is generated from the T1 template image, with the prefix: striatalCNNres_striatalCNNrotated_.
+5. The brain mask is resliced according to the resolution of the CNN reslice template, using nearest neighbor interpolation in SPM (with the getReslicedCNN_image subfunction). An intermediate is generated from the template brain mask, with the prefix: striatalCNNres_striatalCNNrotated_.
 6. The brain mask is padded. The padding is governed by a 3-D cubic structuring element whose width is set at 3 pixels. The line, structuringElement = strel('cube',3), may be edited if the user seeks a bigger width of the structuring element or desires to use a different geometric shape. These changes may have an effect on the amount of segmentations observed. Excessive padding can erode the segmentations while no padding can introduce background signals that can blend with striatal segmentations. 
 7. Through the function pythonCNNstriatalSegmentation, the main script executes a python script (orig_mod_NNEval.py) that uses previously trained network weights to generate segmentations for the input T1 image. The T1 image is padded and 2 dimensions on each side of the image are added to achieve a 5 dimensional object [1x256x256x192x1]. The output of this python script is a .mat file, which contains 2 variables, out, which contains the raw segmentations, and mri, which contains the original image. After the python script returns the outputs, the out variable is squeezed. The .mat file generated from the the python script is: CNN_striatal_python_output_intermediate.mat.
 8. This .mat file is processed with the segmentation_postprocessing subfunction. Out has a size of 256x256x192x6, where 6 represents the segmentation layers, including 1 for background. In the first step, the padded elements are removed and out’s size changes to 234x234x156x6. Next, the cnn network produced probability distributions ranging from 0-1 are converted into discrete values (0 or 1). Then, instead of each voxel being assigned to a probability estimate based on the likelihood of being in each striatal layer, each voxel is only assigned to 1 striatal region using the max function. This avoids overlapping segmentations and ensures each striatal region is specific and based on voxels that exist in that region. The intermediate generated at the end of this step is: raw_StriatalCNNparcels.nii. 
 9. The image containing the striatal segmentations is rotated 90 degrees in the direction opposite of that from step 2. The generated intermediate is: striatalCNN_unrotated_raw_StriatalCNNparcels.nii.
-10. The segmentations are resliced according to the resolution of the original T1 weighted MRI image input using 7th degree spline interpolation in SPM. The first final output, anatRes_NATspace_striatalCNNparcels.nii, is generated. 
-11. (Optional) If the user specifies a BOLD fMRI template image, thena n additional output image is generated so that the segmentations following step 9 are resliced according to the resolution of the BOLD image, using 7th degree spline interpolation. This second final output is BOLDRes_NATspace_striatalCNNparcels.nii. 
+10. The segmentations are resliced according to the resolution of the original T1 weighted MRI image input using 7th degree spline interpolation in SPM. The first final output, anatRes_templateSpace_striatalCNNparcels.nii, is generated. 
+11. (Optional) If the user specifies a BOLD fMRI template image, thena n additional output image is generated so that the segmentations following step 9 are resliced according to the resolution of the BOLD image, using 7th degree spline interpolation. This second final output is BOLDRes_templateSpace_striatalCNNparcels.nii. 
 
 
 INPUTS:
@@ -90,15 +92,15 @@ INPUTS:
 
 OUTPUTS, INCLUDING INTERMEDIATES:
 
-	1. striatalCNNrotated_brainmask_fs.2.nii
-	2. striatalCNNrotated_T1w_acpc_dc_restore_brain.nii
-	3. striatalCNNres_striatalCNNrotated_T1w_acpc_dc_restore_brain.nii
-	4. striatalCNNres_striatalCNNrotated_brainmask_fs.2.nii
+	1. striatalCNNrotated_<T1 template filename>.nii
+	2. striatalCNNrotated_<brainmask template filename>.nii
+	3. striatalCNNres_striatalCNNrotated_<T1 template filename>.nii
+	4. striatalCNNres_striatalCNNrotated_<brainmask template filename>.nii
 	5. CNN_striatal_python_output_intermediate.mat
 	6. raw_StriatalCNNparcels.nii
 	7. striatalCNN_unrotated_raw_StriatalCNNparcels.nii
-	8. anatRes_NATspace_striatalCNNparcels.nii
-	9. BOLDRes_NATspace_striatalCNNparcels.nii (optional)
+	8. anatRes_templateSpace_striatalCNNparcels.nii
+	9. BOLDRes_templateSpace_striatalCNNparcels.nii (optional)
 
 IV. REQUIRED DEPENDENCIES, PYTHON VERSION, AND OTHER FILES
 
