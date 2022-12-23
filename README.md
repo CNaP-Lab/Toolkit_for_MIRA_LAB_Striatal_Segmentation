@@ -1,6 +1,10 @@
 Toolkit_for_MIRA_LAB_Striatal_Segmentation (https://github.com/MMTI/Toolkit_for_MIRA_LAB_Striatal_Segmentation)
-Authors: John C. Williams, MS, Srineil Nizambad, BS, Mario Serrano-Sosa, PhD, Karl Spuhler, PhD, Chuan Huang, PhD, and Jared X. Van Snellenberg, PhD.
-Authors/developers of original CNN Striatal Segmentation Python code (https://github.com/MIRA-Lab-stack/Striatal_Segmentation): Mario Serrano-Sosa, PhD, Karl Spuhler, PhD, and Chuan Huang, PhD.
+
+Authors: 
+John C. Williams, MS, Srineil Nizambad, BS, Mario Serrano-Sosa, PhD, Karl Spuhler, PhD, Chuan Huang, PhD, and Jared X. Van Snellenberg, PhD.
+
+Authors/developers of original CNN Striatal Segmentation Python code (https://github.com/MIRA-Lab-stack/Striatal_Segmentation): 
+Mario Serrano-Sosa, PhD, Karl Spuhler, PhD, and Chuan Huang, PhD.
 
 Table of Contents:
 
@@ -17,10 +21,14 @@ IV. REQUIRED DEPENDENCIES, PYTHON VERSION, AND OTHER FILES
 I. SUMMARY
 
 This is a pipeline that produces CNN-based segmentations of the striatal regions of the brain for given structural and functional MRI images the user provides, using the algorithm described in:
+
 Serrano-Sosa M, Van Snellenberg JX, Meng J, Luceno JR, Spuhler K, Weinstein JJ, Abi-Dargham A, Slifstein M, Huang C. Multitask Learning Based Three-Dimensional Striatal Segmentation of MRI: fMRI and PET Objective Assessments. J Magn Reson Imaging. 2021 Nov;54(5):1623-1635. doi: 10.1002/jmri.27682. Epub 2021 May 10. PMID: 33970510; PMCID: PMC9204799.
+
 The original Python code ((https://github.com/MIRA-Lab-stack/Striatal_Segmentation), which was slightly modified for usability on other systems (e.g., removing hard-coded paths), was developed by Mario Serrano-Sosa, PhD and the Medical Image Research and Analysis (MIRA) Labratory, directed by Chuan Huang PhD, Associate Professor of Radiology at Emory University (previously at  Stony Brook University School of Medicine).
-This toolkit allows a user to utilize this CNN striatal segmentation, handling user inputs and performing all required image manipulations.  The user provides a native or MNI-space structual image, a brain mask in the same space, and, optionally, a BOLD fMRI template image to reslice the output into.  Outputs are returned in the input anatomical space and both anatomical and BOLD resolutions (latter optional).
-The toolkit was developed by John C. Williams, Srineil Nizambad, and Jared X. Van Snellenberg, at the Cognitive Neuroscience and Psychosis Lab at Stony Brook University School of Medicine.
+
+This software allows a user to utilize this CNN striatal segmentation, handling user inputs and performing all required image manipulations.  The user provides a native or MNI-space structual image, a brain mask in the same space, and, optionally, a BOLD fMRI template image to reslice the output into.  Outputs are returned in the input anatomical space and both anatomical and BOLD resolutions (latter optional).
+
+This toolkit was developed by John C. Williams, Srineil Nizambad, and Jared X. Van Snellenberg, at the Cognitive Neuroscience and Psychosis Lab at Stony Brook University School of Medicine.
 
 The striatal regions segmented are the: ventral striatum, pre-commissural putamen, post-commissural putamen, pre-commissural caudate, post-commissural caudate.
 
