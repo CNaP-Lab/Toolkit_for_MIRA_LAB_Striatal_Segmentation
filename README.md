@@ -26,9 +26,9 @@ SPM12 must be on your MATLAB path for this to work.  You can download it from ht
 
 INPUTS:
 1. T1-weighted structural MRI image in ACPC orientation (normalized to MNI space or otherwise), e.g., MNINonLinear/T1w_restore_brain.nii
-2. Template brain mask in ACPC orientation, in the same space as the T1w template
+2. Template brain mask in ACPC orientation, in the same space as the T1w template, e.g., MNINonLinear/brainmask_fs.nii
 3. Output directory
-4. OPTIONAL: BOLD functional MRI image, in the same space and orientation as the T1w template image, but in any desired resolution.  This impace will be used to reslice the outputs, generated from high-resolution anatomical T1w images, to the resolution of the desired BOLD image.
+4. OPTIONAL: BOLD functional MRI image, in the same space and orientation as the T1w template image, but in any desired resolution, e.g., MNINonLinear/Results/RSFC_fMRI_1/RSFC_fMRI_1.nii.  This impace will be used to reslice the outputs, generated from high-resolution anatomical T1w images, to the resolution of the desired BOLD image.  
 
 OUTPUTS*:
 1. anatRes_templateSpace_striatalCNNparcels.nii
@@ -85,10 +85,11 @@ III. PIPELINE STEPS
 
 INPUTS:
 
-	1. T1w_acpc_dc_restore_brain.nii
-	2. brainmask_fs.2.nii
-    3. Output directory
-	4. fMRI.nii (optional)
+    1. <T1 template filename> (e.g., ...MNINonLinear/T1w_restore_brain.nii)
+    2. <brainmask template filename> (e.g., ...MNINonLinear/brainmask_fs.nii)
+    3. <Output directory> (e.g., /mnt/drive/outputdir)
+    4. OPTIONAL: <BOLD template filename> (e.g., ...MNINonLinear/Results/RSFC_fMRI_1/RSFC_fMRI_1.nii)
+
 
 OUTPUTS, INCLUDING INTERMEDIATES:
 
