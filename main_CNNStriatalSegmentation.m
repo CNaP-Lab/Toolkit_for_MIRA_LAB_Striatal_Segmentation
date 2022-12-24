@@ -92,10 +92,32 @@ function [store] = main_CNNStriatalSegmentation(varargin)
     % The following is the default setting created by john, at "3"
     %     structuringElement = strel('cube',3);
     % Keep the same as above if you want the default setting.
-    structuringElement = strel('cube',3);
-
+    
     padded_brain_mask = logical(YY_reslicedRotatedCNN_brainmask);
-    eroded_padded_brain_mask = imerode(padded_brain_mask,structuringElement); %3D erosion once
+    
+    structuringElement = strel('cube',3);
+    twiceEroded_padded_brain_mask = imerode(imerode(padded_brain_mask,structuringElement),structuringElement); %3D erosion once
+
+    eroded_padded_brain_mask = padded_brain_mask;
+    numDilations = 6;
+    for i = 1:numDilations
+        eroded_padded_brain_mask = imdilate(eroded_padded_brain_mask,structuringElement); %3D dilation once
+    end
+
+%     testVV = VV_reslicedRotatedCNN_brainmask;
+%     testVV.fname = '/mnt/jxvs2_01/Thal_Loc_Data/RDoC_Analysis/TIPP_Home/temp1.nii';
+%     spm_write_vol(testVV,eroded_padded_brain_mask);
+
+    numErosions = 6 + numDilations;
+    for i = 1:numErosions
+        eroded_padded_brain_mask = imerode(eroded_padded_brain_mask,structuringElement); %3D erosion once
+    end
+
+    eroded_padded_brain_mask = eroded_padded_brain_mask & twiceEroded_padded_brain_mask;
+
+%     testVV = VV_reslicedRotatedCNN_brainmask;
+%     testVV.fname = '/mnt/jxvs2_01/Thal_Loc_Data/RDoC_Analysis/TIPP_Home/temp.nii';
+%     spm_write_vol(testVV,eroded_padded_brain_mask);
 
     [out,mri] = pythonCNNstriatalSegmentation(segmentation_python_code , reslicedRotatedCNN_T1, segmentation_python_output_intermediate_fullpath, segmentation_directory, segmentation_outputs_directory);
 
