@@ -99,7 +99,7 @@ function [store] = main_CNNStriatalSegmentation(varargin)
     twiceEroded_padded_brain_mask = imerode(imerode(padded_brain_mask,structuringElement),structuringElement); %3D erosion once
 
     eroded_padded_brain_mask = padded_brain_mask;
-    numDilations = 6;
+    numDilations = 8;
     for i = 1:numDilations
         eroded_padded_brain_mask = imdilate(eroded_padded_brain_mask,structuringElement); %3D dilation once
     end
@@ -108,7 +108,7 @@ function [store] = main_CNNStriatalSegmentation(varargin)
 %     testVV.fname = '/mnt/jxvs2_01/Thal_Loc_Data/RDoC_Analysis/TIPP_Home/temp1.nii';
 %     spm_write_vol(testVV,eroded_padded_brain_mask);
 
-    numErosions = 6 + numDilations;
+    numErosions = 4 + numDilations;
     for i = 1:numErosions
         eroded_padded_brain_mask = imerode(eroded_padded_brain_mask,structuringElement); %3D erosion once
     end

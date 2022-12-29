@@ -1,10 +1,6 @@
 Toolkit_for_MIRA_LAB_Striatal_Segmentation (https://github.com/MMTI/Toolkit_for_MIRA_LAB_Striatal_Segmentation)
-
-Authors: 
-John C. Williams, MS, Srineil Nizambad, BS, Mario Serrano-Sosa, PhD, Karl Spuhler, PhD, Jared X. Van Snellenberg, PhD, and Chuan Huang, PhD.
-
-Authors/developers of original CNN Striatal Segmentation Python code (https://github.com/MIRA-Lab-stack/Striatal_Segmentation): 
-Mario Serrano-Sosa, PhD, Karl Spuhler, PhD, and Chuan Huang, PhD.
+Authors: John C. Williams, MS, Srineil Nizambad, BS, Mario Serrano-Sosa, PhD, Karl Spuhler, PhD, Chuan Huang, PhD, and Jared X. Van Snellenberg, PhD.
+Authors/developers of original CNN Striatal Segmentation Python code (https://github.com/MIRA-Lab-stack/Striatal_Segmentation): Mario Serrano-Sosa, PhD, Karl Spuhler, PhD, and Chuan Huang, PhD.
 
 Table of Contents:
 
@@ -14,21 +10,17 @@ II. RUNNING INSTRUCTIONS
 
 III. PIPELINE STEPS
 
-IV. REQUIRED DEPENDENCIES
+IV. REQUIRED DEPENDENCIES, PYTHON VERSION, AND OTHER FILES
 	
 ----------------------------------------------------------------------------------------------
 
 I. SUMMARY
 
-This is a pipeline that produces CNN-based segmentations of the striatal regions of the brain based on a structural T1w image, using the algorithm described in:
-
+This is a pipeline that produces CNN-based segmentations of the striatal regions of the brain for given structural and functional MRI images the user provides, using the algorithm described in:
 Serrano-Sosa M, Van Snellenberg JX, Meng J, Luceno JR, Spuhler K, Weinstein JJ, Abi-Dargham A, Slifstein M, Huang C. Multitask Learning Based Three-Dimensional Striatal Segmentation of MRI: fMRI and PET Objective Assessments. J Magn Reson Imaging. 2021 Nov;54(5):1623-1635. doi: 10.1002/jmri.27682. Epub 2021 May 10. PMID: 33970510; PMCID: PMC9204799.
-
-The original Python code (https://github.com/MIRA-Lab-stack/Striatal_Segmentation), which was slightly modified for usability on other systems (e.g., removing hard-coded paths), was developed by Mario Serrano-Sosa, PhD and the Medical Image Research and Analysis (MIRA) Labratory, directed by Chuan Huang PhD, Associate Professor of Radiology at Emory University (previously at  Stony Brook University School of Medicine).
-
-This software allows a user to utilize this CNN striatal segmentation framework, handling user inputs and performing all required image manipulations.  The user provides a native or MNI-space structual image, a brain mask in the same space, and, optionally, a BOLD fMRI template image to reslice the output into.  Outputs are returned in the input anatomical space and both anatomical and BOLD resolutions (latter optional).
-
-This toolkit was developed by John C. Williams, Srineil Nizambad, and Jared X. Van Snellenberg, at the Cognitive Neuroscience and Psychosis Lab at Stony Brook University School of Medicine.
+The original Python code ((https://github.com/MIRA-Lab-stack/Striatal_Segmentation), which was slightly modified for usability on other systems (e.g., removing hard-coded paths), was developed by Mario Serrano-Sosa, PhD and the Medical Image Research and Analysis (MIRA) Labratory, directed by Chuan Huang PhD, Associate Professor of Radiology at Emory University (previously at  Stony Brook University School of Medicine).
+This toolkit allows a user to utilize this CNN striatal segmentation, handling user inputs and performing all required image manipulations.  The user provides a native or MNI-space structual image, a brain mask in the same space, and, optionally, a BOLD fMRI template image to reslice the output into.  Outputs are returned in the input anatomical space and both anatomical and BOLD resolutions (latter optional).
+The toolkit was developed by John C. Williams, Srineil Nizambad, and Jared X. Van Snellenberg, at the Cognitive Neuroscience and Psychosis Lab at Stony Brook University School of Medicine.
 
 The striatal regions segmented are the: ventral striatum, pre-commissural putamen, post-commissural putamen, pre-commissural caudate, post-commissural caudate.
 
@@ -44,7 +36,7 @@ INPUTS:
 1. T1-weighted structural MRI image in ACPC orientation (normalized to MNI space or otherwise), e.g., MNINonLinear/T1w_restore_brain.nii
 2. Template brain mask in ACPC orientation, in the same space as the T1w template, e.g., MNINonLinear/brainmask_fs.nii
 3. Output directory
-4. OPTIONAL: BOLD functional MRI image, in the same space and orientation as the T1w template image, but in any desired resolution, e.g., MNINonLinear/Results/RSFC_fMRI_1/RSFC_fMRI_1.nii.  This image will be used to reslice the outputs, generated from high-resolution anatomical T1w images, to the resolution of the desired BOLD image.  
+4. OPTIONAL: BOLD functional MRI image, in the same space and orientation as the T1w template image, but in any desired resolution, e.g., MNINonLinear/Results/RSFC_fMRI_1/RSFC_fMRI_1.nii.  This impage will be used to reslice the outputs, generated from high-resolution anatomical T1w images, to the resolution of the desired BOLD image.  
 
 OUTPUTS*:
 1. anatRes_templateSpace_striatalCNNparcels.nii
@@ -96,7 +88,7 @@ III. PIPELINE STEPS
 8. This .mat file is processed with the segmentation_postprocessing subfunction. Out has a size of 256x256x192x6, where 6 represents the segmentation layers, including 1 for background. In the first step, the padded elements are removed and out’s size changes to 234x234x156x6. Next, the cnn network produced probability distributions ranging from 0-1 are converted into discrete values (0 or 1). Then, instead of each voxel being assigned to a probability estimate based on the likelihood of being in each striatal layer, each voxel is only assigned to 1 striatal region using the max function. This avoids overlapping segmentations and ensures each striatal region is specific and based on voxels that exist in that region. The intermediate generated at the end of this step is: raw_StriatalCNNparcels.nii. 
 9. The image containing the striatal segmentations is rotated 90 degrees in the direction opposite of that from step 2. The generated intermediate is: striatalCNN_unrotated_raw_StriatalCNNparcels.nii.
 10. The segmentations are resliced according to the resolution of the original T1 weighted MRI image input using 7th degree spline interpolation in SPM. The first final output, anatRes_templateSpace_striatalCNNparcels.nii, is generated. 
-11. (Optional) If the user specifies a BOLD fMRI template image, then an additional output image is generated so that the segmentations following step 9 are resliced according to the resolution of the BOLD image, using 7th degree spline interpolation. This second final output is BOLDRes_templateSpace_striatalCNNparcels.nii. 
+11. (Optional) If the user specifies a BOLD fMRI template image, thena n additional output image is generated so that the segmentations following step 9 are resliced according to the resolution of the BOLD image, using 7th degree spline interpolation. This second final output is BOLDRes_templateSpace_striatalCNNparcels.nii. 
 
 
 INPUTS:
