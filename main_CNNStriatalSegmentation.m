@@ -133,6 +133,11 @@ function [store] = main_CNNStriatalSegmentation(varargin)
 
     movefile([segmentation_outputs_directory '/anatRes_templateSpace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii'],[segmentation_outputs_directory '/anatRes_templateSpace_striatalCNNparcels.nii']);
 
+    % make 10 ROIs - left and right for each of the 5 striatal regions
+    filename_n=[segmentation_outputs_directory '/anatRes_templateSpace_striatalCNNparcels.nii'];
+    [store]= getseparatedROIs(store,filename_n,segmentation_outputs_directory,'anat');
+
+
     if(~isempty(BOLD_template_image))
         imageType = 'BOLDRes_templateSpace_striatalCNNparcels';
         imagePrefix = [imageType '_'];
@@ -140,11 +145,57 @@ function [store] = main_CNNStriatalSegmentation(varargin)
         [store,BOLDRes_templateSpace_striatalCNNparcels] = getReslicedCNN_image(store,unrotatedCNN_segmentation,BOLD_template_image,imageType,imagePrefix,isMask);
 
         movefile([segmentation_outputs_directory '/BOLDRes_templateSpace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii'],[segmentation_outputs_directory '/BOLDRes_templateSpace_striatalCNNparcels.nii']);
+    
+        filename_n=[segmentation_outputs_directory '/BOLDRes_templateSpace_striatalCNNparcels.nii'];
+        [store]= getseparatedROIs(store,filename_n,segmentation_outputs_directory,'bold');
+
+    
     end
 
     disp('Full striatal segmentation pipeline complete.');  pause(eps); drawnow;
 
 end
+
+function [store]= getseparatedROIs(store,filename_n,segmentation_outputs_directory,anat_or_bold_flag)
+    
+    % the five ROIs of interest 
+    ROIs = {'ROI1','ROI2','ROI3','ROI4','ROI5'};
+    
+    [a,b,c]=fileparts(filename_n);
+    V=spm_vol(filename_n);
+    [Y,XYZ]=spm_read_vols(V);
+    Ycopy=Y;
+    for i=1:5
+       Y=Ycopy;
+       % set everything asides from the particular segmentation to 0
+       Y(Y~=i)=0;
+       Yl=Y; 
+       % gather right ROIs
+       Y(XYZ(1,:)<0)=0;
+       ROIfilename = fullfile(segmentation_outputs_directory, [anat_or_bold_flag 'right' ROIs{i} c])
+       V.fname=ROIfilename;
+       spm_write_vol(V,Y);
+       
+       [aa,bb,cc]=fileparts(V.fname);
+       imagefname=[bb cc];
+       store.fname{end+1}=imagefname;
+       store.imagetype{end+1}=['right' ROIs{i}];
+       
+       % gather left ROIs
+       Yl(XYZ(1,:)>0)=0;
+       ROIfilename = fullfile(segmentation_outputs_directory, [anat_or_bold_flag 'left' ROIs{i} c])
+       V.fname=ROIfilename;
+       spm_write_vol(V,Yl);
+         
+       [aa,bb,cc]=fileparts(V.fname);
+       imagefname=[bb cc];
+       store.fname{end+1}=imagefname;
+       store.imagetype{end+1}=['left' ROIs{i}];
+
+    end
+    
+end
+
 
 function [store,rotatedFileText] = getRotatedCNN_image(store,T1_filename,segmentation_outputs_directory,imageType,direction)
     %Rotate 90 deg
