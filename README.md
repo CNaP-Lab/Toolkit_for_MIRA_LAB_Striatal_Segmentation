@@ -94,10 +94,10 @@ II. RUNNING INSTRUCTIONS:
 6. You may now inspect your final striatal segmentations for both your structural and functional images, found in the segmentation_outputs_directory (whose path you edited in CNNStriatalSegmentation_wrapper_script.m from step 5), in an image viewer of your choice. Our team used MRIcron, a free tool readily available at: https://www.nitrc.org/projects/mricron. The directory also contains intermediates generated in the pipeline, which may be viewed. 
 
 The final anatomical resolution segmentation mask is named: 
-anatRes_templateSpace_striatalCNNparcels.nii. The 10 separate hemispheric-specific ROI images produced are named: anat_left_prePU.nii,anat_right_RO1.nii,anat_left_preCA.nii,anat_right_RO2.nii,anat_left_postCA.nii,anat_right_RO3.nii,anat_left_postPU.nii,anat_right_postPU.nii, anat_left_VST.nii,anat_right_VST.nii.
+anatRes_templateSpace_striatalCNNparcels.nii. The 10 separate hemispheric-specific ROI images produced are named: anat_left_prePU.nii,anat_right_prePU.nii,anat_left_preCA.nii,anat_right_preCA.nii,anat_left_postCA.nii,anat_right_postCA.nii,anat_left_postPU.nii,anat_right_postPU.nii, anat_left_VST.nii,anat_right_VST.nii.
 
 If the optional BOLD fMRI template image is specified, the final BOLD fMRI resolution segmentation mask is additionally produced and named:
-BOLDRes_templateSpace_striatalCNNparcels.nii. The 10 separate hemispheric-specific ROI images produced are named: bold_left_prePU.nii,bold_right_RO1.nii,bold_left_preCA.nii,bold_right_RO2.nii,bold_left_postCA.nii,bold_right_RO3.nii,bold_left_postPU.nii,bold_right_postPU.nii, bold_left_VST.nii,bold_right_VST.nii.
+BOLDRes_templateSpace_striatalCNNparcels.nii. The 10 separate hemispheric-specific ROI images produced are named: bold_left_prePU.nii,bold_right_prePU.nii,bold_left_preCA.nii,bold_right_preCA.nii,bold_left_postCA.nii,bold_right_postCA.nii,bold_left_postPU.nii,bold_right_postPU.nii, bold_left_VST.nii,bold_right_VST.nii.
 
 III. PIPELINE STEPS
 
@@ -113,7 +113,7 @@ III. PIPELINE STEPS
 10. 
     a)The segmentations are resliced according to the resolution of the original T1 weighted MRI image input using 7th degree spline interpolation in SPM. The first final output, anatRes_templateSpace_striatalCNNparcels.nii, is generated. 
     
-    b) Through the subfunction getseparatedROIs, the 5 whole-brain ROIs segmented in the anatRes_templateSpace_striatalCNNparcels.nii are separated and split between the left and right hemispheres to produce 10 hemispheric-specific ROIs, which are saved as separate NIfTI images: anat_left_prePU.nii,anat_right_RO1.nii,anat_left_preCA.nii,anat_right_RO2.nii, anat_left_postCA.nii,anat_right_RO3.nii,anat_left_postPU.nii,anat_right_postPU.nii, anat_left_VST.nii,anat_right_VST.nii.
+    b) Through the subfunction getseparatedROIs, the 5 whole-brain ROIs segmented in the anatRes_templateSpace_striatalCNNparcels.nii are separated and split between the left and right hemispheres to produce 10 hemispheric-specific ROIs, which are saved as separate NIfTI images: anat_left_prePU.nii,anat_right_prePU.nii,anat_left_preCA.nii,anat_right_preCA.nii, anat_left_postCA.nii,anat_right_postCA.nii,anat_left_postPU.nii,anat_right_postPU.nii, anat_left_VST.nii,anat_right_VST.nii.
 
     This is achieved by having the product of step 10a set equal to zero for all values not equal to the integer representing the nth ROI in consideration. Since the product of 10a is an image where each voxel is either assigned to an integer representing each of the 5 ROIs (1-5) or not assigned to any ROI (0), each ROI can be separated as aforementioned. For each whole-brain ROI, the right and left hemispheric divisions of the ROI can be captured by setting the image to zero at indices that represent negative XYZ coordinates (as gathered by spm_read_vols) and positive XYZ coordinates, respectively. 
 
@@ -122,7 +122,7 @@ III. PIPELINE STEPS
 
 	a) If the user specifies a BOLD fMRI template image, then an additional output image is generated so that the segmentations following step 9 are resliced according to the resolution of the BOLD image, using 7th degree spline interpolation. This output is BOLDRes_templateSpace_striatalCNNparcels.nii. 
 	
-	b) Similar to step 10b, 10 ROIs are produced based on the segmentations in the BOLDRes_templateSpace_striatalCNNparcels.nii image. These are: bold_left_prePU.nii,bold_right_RO1.nii,bold_left_preCA.nii,bold_right_RO2.nii, bold_left_postCA.nii,bold_right_RO3.nii,bold_left_postPU.nii,bold_right_postPU.nii, bold_left_VST.nii,bold_right_VST.nii
+	b) Similar to step 10b, 10 ROIs are produced based on the segmentations in the BOLDRes_templateSpace_striatalCNNparcels.nii image. These are: bold_left_prePU.nii,bold_right_prePU.nii,bold_left_preCA.nii,bold_right_preCA.nii, bold_left_postCA.nii,bold_right_postCA.nii,bold_left_postPU.nii,bold_right_postPU.nii, bold_left_VST.nii,bold_right_VST.nii
 
 
 INPUTS:
