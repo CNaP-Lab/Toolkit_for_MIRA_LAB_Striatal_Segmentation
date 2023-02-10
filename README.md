@@ -22,7 +22,7 @@ The original Python code ((https://github.com/MIRA-Lab-stack/Striatal_Segmentati
 This toolkit allows a user to utilize this CNN striatal segmentation, handling user inputs and performing all required image manipulations.  The user provides a native or MNI-space structual image, a brain mask in the same space, and, optionally, a BOLD fMRI template image to reslice the output into.  Outputs are returned in the input anatomical space and both anatomical and BOLD resolutions (latter optional).
 The toolkit was developed by John C. Williams, Srineil Nizambad, and Jared X. Van Snellenberg, at the Cognitive Neuroscience and Psychosis Lab at Stony Brook University School of Medicine.
 
-The striatal regions segmented are the: ventral striatum (VST), pre-commissural putamen (prePU), post-commissural putamen (postPU), pre-commissural caudate (preCA), post-commissural caudate (postCA). 
+The striatal regions of interest (ROIs) segmented are the: ventral striatum (VST), pre-commissural putamen (prePU), post-commissural putamen (postPU), pre-commissural caudate (preCA), post-commissural caudate (postCA). 
 
 The user provides a T1-weighted structural MRI image in ACPC orientation, a corresponding brain mask in ACPC orientation, and, optionally, a BOLD functional MRI template image for use in reslicing the outputs to BOLD resolution.
 
