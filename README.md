@@ -22,11 +22,11 @@ The original Python code ((https://github.com/MIRA-Lab-stack/Striatal_Segmentati
 This toolkit allows a user to utilize this CNN striatal segmentation, handling user inputs and performing all required image manipulations.  The user provides a native or MNI-space structual image, a brain mask in the same space, and, optionally, a BOLD fMRI template image to reslice the output into.  Outputs are returned in the input anatomical space and both anatomical and BOLD resolutions (latter optional).
 The toolkit was developed by John C. Williams, Srineil Nizambad, and Jared X. Van Snellenberg, at the Cognitive Neuroscience and Psychosis Lab at Stony Brook University School of Medicine.
 
-The striatal regions segmented are the: ventral striatum, pre-commissural putamen, post-commissural putamen, pre-commissural caudate, post-commissural caudate.
+The striatal regions segmented are the: ventral striatum (VST), pre-commissural putamen (prePU), post-commissural putamen (postPU), pre-commissural caudate (preCA), post-commissural caudate (postCA). 
 
 The user provides a T1-weighted structural MRI image in ACPC orientation, a corresponding brain mask in ACPC orientation, and, optionally, a BOLD functional MRI template image for use in reslicing the outputs to BOLD resolution.
 
-The following outputs are produced: a NIfTI image containing segmentations that can be overlaid on the T1 image and, if the optional BOLD fMRI template image was specified, an additional NIfTI image containing segmentations that can be overlaid on the fMRI image.
+The following outputs are produced: a NIfTI image containing segmentations that can be overlaid on the T1 image and 10 separate NIfTI images for right and left hemispheric divisions of each of the 5 striatal ROIs segmented, in T1-based resolution. If the optional BOLD fMRI template image was specified, an additional NIfTI image containing segmentations that can be overlaid on the fMRI image and 10 separate NIfTI images for right and left hemispheric divisions of each of the 5 striatal ROIs segmented are produced, in BOLD-based resolution. 
 
 The main operating script of the pipeline is main_CNNStriatalSegmentation.m. This script is called by CNNStriatalSegmentation_wrapper_script.m, which has a set of parameters that the user is instructed to adjust therein. Full running operations are discussed in the second section, RUNNING INSTRUCTIONS. 
 
@@ -40,7 +40,30 @@ INPUTS:
 
 OUTPUTS*:
 1. anatRes_templateSpace_striatalCNNparcels.nii
-2. OPTIONAL: BOLDRes_templateSpace_striatalCNNparcels.nii
+2. anat_left_prePU.nii
+3. anat_right_prePU.nii
+4. anat_left_preCA.nii
+5. anat_right_preCA.nii
+6. anat_left_postCA.nii
+7. anat_right_postCA.nii
+8. anat_left_postPU.nii
+9. anat_right_postPU.nii
+10.anat_left_VST.nii
+11.anat_right_VST.nii
+
+OPTIONAL OUTPUTS (if BOLD functional MRI is provided):
+
+12. BOLDRes_templateSpace_striatalCNNparcels.nii
+13. bold_left_prePU.nii
+14. bold_right_prePU.nii
+15. bold_left_preCA.nii
+16. bold_right_preCA.nii
+17. bold_left_postCA.nii
+18. bold_right_postCA.nii
+19. bold_left_postPU.nii
+20. bold_right_postPU.nii
+21. bold_left_VST.nii
+22. bold_right_VST.nii
 
 Several intermediates are also generated and discussed in PIPELINE STEPS. 
 
@@ -71,10 +94,10 @@ II. RUNNING INSTRUCTIONS:
 6. You may now inspect your final striatal segmentations for both your structural and functional images, found in the segmentation_outputs_directory (whose path you edited in CNNStriatalSegmentation_wrapper_script.m from step 5), in an image viewer of your choice. Our team used MRIcron, a free tool readily available at: https://www.nitrc.org/projects/mricron. The directory also contains intermediates generated in the pipeline, which may be viewed. 
 
 The final anatomical resolution segmentation mask is named: 
-anatRes_templateSpace_striatalCNNparcels.nii.
+anatRes_templateSpace_striatalCNNparcels.nii. The 10 separate hemispheric-specific ROI images produced are named: anat_left_prePU.nii,anat_right_RO1.nii,anat_left_preCA.nii,anat_right_RO2.nii, anat_left_postCA.nii,anat_right_RO3.nii,anat_left_postPU.nii,anat_right_postPU.nii, anat_left_VST.nii,anat_right_VST.nii.
 
 If the optional BOLD fMRI template image is specified, the final BOLD fMRI resolution segmentation mask is additionally produced and named:
-BOLDRes_templateSpace_striatalCNNparcels.nii.
+BOLDRes_templateSpace_striatalCNNparcels.nii. The 10 separate hemispheric-specific ROI images produced are named: bold_left_prePU.nii,bold_right_RO1.nii,bold_left_preCA.nii,bold_right_RO2.nii, bold_left_postCA.nii,bold_right_RO3.nii,bold_left_postPU.nii,bold_right_postPU.nii, bold_left_VST.nii,bold_right_VST.nii.
 
 III. PIPELINE STEPS
 
@@ -87,8 +110,14 @@ III. PIPELINE STEPS
 7. Through the function pythonCNNstriatalSegmentation, the main script executes a python script (orig_mod_NNEval.py) that uses previously trained network weights to generate segmentations for the input T1 image. The T1 image is padded and 2 dimensions on each side of the image are added to achieve a 5 dimensional object [1x256x256x192x1]. The output of this python script is a .mat file, which contains 2 variables, out, which contains the raw segmentations, and mri, which contains the original image. After the python script returns the outputs, the out variable is squeezed. The .mat file generated from the the python script is: CNN_striatal_python_output_intermediate.mat.
 8. This .mat file is processed with the segmentation_postprocessing subfunction. Out has a size of 256x256x192x6, where 6 represents the segmentation layers, including 1 for background. In the first step, the padded elements are removed and out’s size changes to 234x234x156x6. Next, the cnn network produced probability distributions ranging from 0-1 are converted into discrete values (0 or 1). Then, instead of each voxel being assigned to a probability estimate based on the likelihood of being in each striatal layer, each voxel is only assigned to 1 striatal region using the max function. This avoids overlapping segmentations and ensures each striatal region is specific and based on voxels that exist in that region. The intermediate generated at the end of this step is: raw_StriatalCNNparcels.nii. 
 9. The image containing the striatal segmentations is rotated 90 degrees in the direction opposite of that from step 2. The generated intermediate is: striatalCNN_unrotated_raw_StriatalCNNparcels.nii.
-10. The segmentations are resliced according to the resolution of the original T1 weighted MRI image input using 7th degree spline interpolation in SPM. The first final output, anatRes_templateSpace_striatalCNNparcels.nii, is generated. 
-11. (Optional) If the user specifies a BOLD fMRI template image, thena n additional output image is generated so that the segmentations following step 9 are resliced according to the resolution of the BOLD image, using 7th degree spline interpolation. This second final output is BOLDRes_templateSpace_striatalCNNparcels.nii. 
+10. a)The segmentations are resliced according to the resolution of the original T1 weighted MRI image input using 7th degree spline interpolation in SPM. The first final output, anatRes_templateSpace_striatalCNNparcels.nii, is generated. 
+    b) Through the subfunction getseparatedROIs, the 5 whole-brain ROIs segmented in the anatRes_templateSpace_striatalCNNparcels.nii are separated and split between the left and right hemispheres to produce 10 hemispheric-specific ROIs, which are saved as separate NIfTI images: anat_left_prePU.nii,anat_right_RO1.nii,anat_left_preCA.nii,anat_right_RO2.nii, anat_left_postCA.nii,anat_right_RO3.nii,anat_left_postPU.nii,anat_right_postPU.nii, anat_left_VST.nii,anat_right_VST.nii.
+
+    This is achieved by having the product of step 10a set equal to zero for all values not equal to the integer representing the nth ROI in consideration. Since the product of 10a is an image where each voxel is either assigned to an integer representing each of the 5 ROIs (1-5) or not assigned to any ROI (0), each ROI can be separated as aforementioned. For each whole-brain ROI, the right and left hemispheric divisions of the ROI can be captured by setting the image to zero at indices that represent negative XYZ coordinates (as gathered by spm_read_vols) and positive XYZ coordinates, respectively. 
+
+
+11. (Optional)  a) If the user specifies a BOLD fMRI template image, then an additional output image is generated so that the segmentations following step 9 are resliced according to the resolution of the BOLD image, using 7th degree spline interpolation. This output is BOLDRes_templateSpace_striatalCNNparcels.nii. 
+		b) Similar to step 10b, 10 ROIs are produced based on the segmentations in the BOLDRes_templateSpace_striatalCNNparcels.nii image. These are: bold_left_prePU.nii,bold_right_RO1.nii,bold_left_preCA.nii,bold_right_RO2.nii, bold_left_postCA.nii,bold_right_RO3.nii,bold_left_postPU.nii,bold_right_postPU.nii, bold_left_VST.nii,bold_right_VST.nii
 
 
 INPUTS:
@@ -109,7 +138,29 @@ OUTPUTS, INCLUDING INTERMEDIATES:
 	6. raw_StriatalCNNparcels.nii
 	7. striatalCNN_unrotated_raw_StriatalCNNparcels.nii
 	8. anatRes_templateSpace_striatalCNNparcels.nii
-	9. BOLDRes_templateSpace_striatalCNNparcels.nii (optional)
+ 	9. anat_left_prePU.nii
+	10. anat_right_prePU.nii
+	11. anat_left_preCA.nii
+	12. anat_right_preCA.nii
+	13. anat_left_postCA.nii
+	14. anat_right_postCA.nii
+	15. anat_left_postPU.nii
+	16. anat_right_postPU.nii
+	17. anat_left_VST.nii
+	18. anat_right_VST.nii
+
+	(19-29 are OPTIONAL, dependent on whether a BOLD fMRI input is provided)
+	19. BOLDRes_templateSpace_striatalCNNparcels.nii
+	20. bold_left_prePU.nii
+	21. bold_right_prePU.nii
+	22. bold_left_preCA.nii
+	23. bold_right_preCA.nii
+	24. bold_left_postCA.nii
+	25. bold_right_postCA.nii
+	26. bold_left_postPU.nii
+	27. bold_right_postPU.nii
+	28. bold_left_VST.nii
+	29. bold_right_VST.nii
 
 IV. REQUIRED DEPENDENCIES, PYTHON VERSION, AND OTHER FILES
 

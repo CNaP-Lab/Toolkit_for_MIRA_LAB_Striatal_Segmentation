@@ -133,7 +133,7 @@ function [store] = main_CNNStriatalSegmentation(varargin)
 
     movefile([segmentation_outputs_directory '/anatRes_templateSpace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii'],[segmentation_outputs_directory '/anatRes_templateSpace_striatalCNNparcels.nii']);
 
-    % make 10 ROIs - left and right for each of the 5 striatal regions
+    % For the output image containing the anatomical resolution segmentations, create left and right hemispheric ROI images for each of the 5 whole-brain striatal segmentations, creating a total of 10 ROI images
     filename_n=[segmentation_outputs_directory '/anatRes_templateSpace_striatalCNNparcels.nii'];
     [store]= getseparatedROIs(store,filename_n,segmentation_outputs_directory,'anat');
 
@@ -145,7 +145,8 @@ function [store] = main_CNNStriatalSegmentation(varargin)
         [store,BOLDRes_templateSpace_striatalCNNparcels] = getReslicedCNN_image(store,unrotatedCNN_segmentation,BOLD_template_image,imageType,imagePrefix,isMask);
 
         movefile([segmentation_outputs_directory '/BOLDRes_templateSpace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii'],[segmentation_outputs_directory '/BOLDRes_templateSpace_striatalCNNparcels.nii']);
-    
+        
+	% Create 10 ROIs for bold resolution segmentations, as done for anatomical resolution segmentations
         filename_n=[segmentation_outputs_directory '/BOLDRes_templateSpace_striatalCNNparcels.nii'];
         [store]= getseparatedROIs(store,filename_n,segmentation_outputs_directory,'bold');
 
@@ -159,7 +160,7 @@ end
 function [store]= getseparatedROIs(store,filename_n,segmentation_outputs_directory,anat_or_bold_flag)
     
     % the five ROIs of interest 
-    ROIs = {'ROI1','ROI2','ROI3','ROI4','ROI5'};
+    ROIs = {'prePU','preCA','postCA','postPU','VST'};
     
     [a,b,c]=fileparts(filename_n);
     V=spm_vol(filename_n);
@@ -172,7 +173,7 @@ function [store]= getseparatedROIs(store,filename_n,segmentation_outputs_directo
        Yl=Y; 
        % gather right ROIs
        Y(XYZ(1,:)<0)=0;
-       ROIfilename = fullfile(segmentation_outputs_directory, [anat_or_bold_flag 'right' ROIs{i} c])
+       ROIfilename = fullfile(segmentation_outputs_directory, [anat_or_bold_flag '_right_' ROIs{i} c])
        V.fname=ROIfilename;
        spm_write_vol(V,Y);
        
@@ -183,7 +184,7 @@ function [store]= getseparatedROIs(store,filename_n,segmentation_outputs_directo
        
        % gather left ROIs
        Yl(XYZ(1,:)>0)=0;
-       ROIfilename = fullfile(segmentation_outputs_directory, [anat_or_bold_flag 'left' ROIs{i} c])
+       ROIfilename = fullfile(segmentation_outputs_directory, [anat_or_bold_flag '_left_' ROIs{i} c])
        V.fname=ROIfilename;
        spm_write_vol(V,Yl);
          
