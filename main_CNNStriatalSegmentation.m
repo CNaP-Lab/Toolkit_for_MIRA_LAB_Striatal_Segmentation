@@ -104,9 +104,9 @@ function [store] = main_CNNStriatalSegmentation(varargin)
         eroded_padded_brain_mask = imdilate(eroded_padded_brain_mask,structuringElement); %3D dilation once
     end
 
-    testVV = VV_reslicedRotatedCNN_brainmask;
-    testVV.fname = '/mnt/jxvs2_01/Thal_Loc_Data/RDoC_Analysis/TIPP_Home/temp1.nii';
-    spm_write_vol(testVV,eroded_padded_brain_mask);
+%     testVV = VV_reslicedRotatedCNN_brainmask;
+%     testVV.fname = '/mnt/jxvs2_01/Thal_Loc_Data/RDoC_Analysis/TIPP_Home/temp1.nii';
+%     spm_write_vol(testVV,eroded_padded_brain_mask);
 
     numErosions = 3 + numDilations;
     for i = 1:numErosions
@@ -117,9 +117,9 @@ function [store] = main_CNNStriatalSegmentation(varargin)
 
     eroded_padded_brain_mask = twiceEroded_padded_brain_mask;
 
-    testVV = VV_reslicedRotatedCNN_brainmask;
-    testVV.fname = '/mnt/jxvs2_01/Thal_Loc_Data/RDoC_Analysis/TIPP_Home/temp2.nii';
-    spm_write_vol(testVV,eroded_padded_brain_mask);
+%     testVV = VV_reslicedRotatedCNN_brainmask;
+%     testVV.fname = '/mnt/jxvs2_01/Thal_Loc_Data/RDoC_Analysis/TIPP_Home/temp2.nii';
+%     spm_write_vol(testVV,eroded_padded_brain_mask);
 
     [out,mri] = pythonCNNstriatalSegmentation(segmentation_python_code , reslicedRotatedCNN_T1, segmentation_python_output_intermediate_fullpath, segmentation_directory, segmentation_outputs_directory);
 
@@ -335,7 +335,7 @@ function [store,raw_segmentation_filename] = segmentation_postprocessing(store,o
     iimg_write_images(filteredSegmentationData,segmentationHeader,raw_segmentation_filename);
 
     delete(VV_reslicedRotatedCNN_brainmask.fname);
-    
+
     imageType = 'raw_StriatalCNNparcels';
     %
     [a,b,c] = fileparts(VV_reslicedRotatedCNN_brainmask.fname);
