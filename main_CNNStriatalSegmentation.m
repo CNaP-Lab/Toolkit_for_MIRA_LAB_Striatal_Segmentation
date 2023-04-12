@@ -104,20 +104,22 @@ function [store] = main_CNNStriatalSegmentation(varargin)
         eroded_padded_brain_mask = imdilate(eroded_padded_brain_mask,structuringElement); %3D dilation once
     end
 
-%     testVV = VV_reslicedRotatedCNN_brainmask;
-%     testVV.fname = '/mnt/jxvs2_01/Thal_Loc_Data/RDoC_Analysis/TIPP_Home/temp1.nii';
-%     spm_write_vol(testVV,eroded_padded_brain_mask);
+    testVV = VV_reslicedRotatedCNN_brainmask;
+    testVV.fname = '/mnt/jxvs2_01/Thal_Loc_Data/RDoC_Analysis/TIPP_Home/temp1.nii';
+    spm_write_vol(testVV,eroded_padded_brain_mask);
 
-    numErosions = 4 + numDilations;
+    numErosions = 3 + numDilations;
     for i = 1:numErosions
         eroded_padded_brain_mask = imerode(eroded_padded_brain_mask,structuringElement); %3D erosion once
     end
 
     eroded_padded_brain_mask = eroded_padded_brain_mask & twiceEroded_padded_brain_mask;
 
-%     testVV = VV_reslicedRotatedCNN_brainmask;
-%     testVV.fname = '/mnt/jxvs2_01/Thal_Loc_Data/RDoC_Analysis/TIPP_Home/temp.nii';
-%     spm_write_vol(testVV,eroded_padded_brain_mask);
+    eroded_padded_brain_mask = twiceEroded_padded_brain_mask;
+
+    testVV = VV_reslicedRotatedCNN_brainmask;
+    testVV.fname = '/mnt/jxvs2_01/Thal_Loc_Data/RDoC_Analysis/TIPP_Home/temp2.nii';
+    spm_write_vol(testVV,eroded_padded_brain_mask);
 
     [out,mri] = pythonCNNstriatalSegmentation(segmentation_python_code , reslicedRotatedCNN_T1, segmentation_python_output_intermediate_fullpath, segmentation_directory, segmentation_outputs_directory);
 
@@ -133,11 +135,6 @@ function [store] = main_CNNStriatalSegmentation(varargin)
 
     movefile([segmentation_outputs_directory '/anatRes_templateSpace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii'],[segmentation_outputs_directory '/anatRes_templateSpace_striatalCNNparcels.nii']);
 
-    % For the output image containing the anatomical resolution segmentations, create left and right hemispheric ROI images for each of the 5 whole-brain striatal segmentations, creating a total of 10 ROI images
-    filename_n=[segmentation_outputs_directory '/anatRes_templateSpace_striatalCNNparcels.nii'];
-    [store]= getseparatedROIs(store,filename_n,segmentation_outputs_directory,'anat');
-
-
     if(~isempty(BOLD_template_image))
         imageType = 'BOLDRes_templateSpace_striatalCNNparcels';
         imagePrefix = [imageType '_'];
@@ -145,58 +142,11 @@ function [store] = main_CNNStriatalSegmentation(varargin)
         [store,BOLDRes_templateSpace_striatalCNNparcels] = getReslicedCNN_image(store,unrotatedCNN_segmentation,BOLD_template_image,imageType,imagePrefix,isMask);
 
         movefile([segmentation_outputs_directory '/BOLDRes_templateSpace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii'],[segmentation_outputs_directory '/BOLDRes_templateSpace_striatalCNNparcels.nii']);
-        
-	% Create 10 ROIs for bold resolution segmentations, as done for anatomical resolution segmentations
-        filename_n=[segmentation_outputs_directory '/BOLDRes_templateSpace_striatalCNNparcels.nii'];
-        [store]= getseparatedROIs(store,filename_n,segmentation_outputs_directory,'bold');
-
-    
     end
 
     disp('Full striatal segmentation pipeline complete.');  pause(eps); drawnow;
 
 end
-
-function [store]= getseparatedROIs(store,filename_n,segmentation_outputs_directory,anat_or_bold_flag)
-    
-    % the five ROIs of interest 
-    ROIs = {'prePU','preCA','postCA','postPU','VST'};
-    
-    [a,b,c]=fileparts(filename_n);
-    V=spm_vol(filename_n);
-    [Y,XYZ]=spm_read_vols(V);
-    Ycopy=Y;
-    for i=1:5
-       Y=Ycopy;
-       % set everything asides from the particular segmentation to 0
-       Y(Y~=i)=0;
-       Yl=Y; 
-       % gather right ROIs
-       Y(XYZ(1,:)<0)=0;
-       ROIfilename = fullfile(segmentation_outputs_directory, [anat_or_bold_flag '_right_' ROIs{i} c])
-       V.fname=ROIfilename;
-       spm_write_vol(V,Y);
-       
-       [aa,bb,cc]=fileparts(V.fname);
-       imagefname=[bb cc];
-       store.fname{end+1}=imagefname;
-       store.imagetype{end+1}=['right' ROIs{i}];
-       
-       % gather left ROIs
-       Yl(XYZ(1,:)>0)=0;
-       ROIfilename = fullfile(segmentation_outputs_directory, [anat_or_bold_flag '_left_' ROIs{i} c])
-       V.fname=ROIfilename;
-       spm_write_vol(V,Yl);
-         
-       [aa,bb,cc]=fileparts(V.fname);
-       imagefname=[bb cc];
-       store.fname{end+1}=imagefname;
-       store.imagetype{end+1}=['left' ROIs{i}];
-
-    end
-    
-end
-
 
 function [store,rotatedFileText] = getRotatedCNN_image(store,T1_filename,segmentation_outputs_directory,imageType,direction)
     %Rotate 90 deg
@@ -355,8 +305,37 @@ function [store,raw_segmentation_filename] = segmentation_postprocessing(store,o
     elseif (existInclSymlinks(raw_segmentation_filename))
         tryToDeleteSymlink(raw_segmentation_filename);
     end
+    [a,b,c] = fileparts(VV_reslicedRotatedCNN_brainmask.fname);
+    VV_reslicedRotatedCNN_brainmask.fname = fullfile(a,[b '_temp' c]);
     spm_write_vol(VV_reslicedRotatedCNN_brainmask,out); pause(eps); drawnow;
 
+    %Remove voxels too far from the origin
+    [segmentationHeader,segmentationData] = ...
+        iimg_read_img(VV_reslicedRotatedCNN_brainmask.fname,2); 
+
+    segmentationCluster = iimg_indx2clusters(segmentationData,segmentationHeader);
+
+    clusterXYZcell = {segmentationCluster.mm_center};
+    [maxVoxel,clusterDistance] = deal(nan(size(clusterXYZcell)));
+
+
+    for i = 1:length(clusterXYZcell)
+        clusterDistance(i) = sqrt(sum(clusterXYZcell{i}.^2));
+        thisXYZmm = segmentationCluster(i).XYZmm;
+        thisDistance = sqrt(sum(thisXYZmm.^2,1));
+        maxVoxelDistance(i) = max(thisDistance);
+    end
+    
+    distanceThreshold = 50;
+    clusterWithinThreshold = clusterDistance < distanceThreshold;
+    filteredSegmentationClusters = segmentationCluster(clusterWithinThreshold);
+
+    filteredSegmentationData = iimg_clusters2indx(filteredSegmentationClusters,segmentationHeader);
+
+    iimg_write_images(filteredSegmentationData,segmentationHeader,raw_segmentation_filename);
+
+    delete(VV_reslicedRotatedCNN_brainmask.fname);
+    
     imageType = 'raw_StriatalCNNparcels';
     %
     [a,b,c] = fileparts(VV_reslicedRotatedCNN_brainmask.fname);
