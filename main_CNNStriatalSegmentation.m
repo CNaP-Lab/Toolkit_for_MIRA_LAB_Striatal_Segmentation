@@ -194,7 +194,10 @@ function [store]= getseparatedROIs(store,filename_n,segmentation_outputs_directo
         [aa,bb,cc]=fileparts(V.fname);
         imagefname=[bb cc];
         store.fname{end+1}=imagefname;
-        store.imagetype{end+1}=['left' ROIs{i}];
+
+        % store.imagetype{end+1}=['left' ROIs{i}];
+        store.imagetype{end+1}=[anat_or_bold_flag '_left_' ROIs{i}];
+
 
      end
 
