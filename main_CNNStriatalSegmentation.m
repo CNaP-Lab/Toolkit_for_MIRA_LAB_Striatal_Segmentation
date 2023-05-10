@@ -390,11 +390,20 @@ function [store,raw_segmentation_filename] = segmentation_postprocessing(store,o
 
     iimg_write_images(filteredSegmentationData,segmentationHeader,raw_segmentation_filename);
 
-    delete(VV_reslicedRotatedCNN_brainmask.fname);
+    [Vdata,Ydata] = tippVol(VV_reslicedRotatedCNN_brainmask.fname);
+    [Vmask,Ymask] = tippVol(raw_segmentation_filename);
+
+    Vdata.fname = raw_segmentation_filename;
+    Ydata(~Ymask(:)) = 0; %Mask out anything outside of the mask
+
+    delete(Vdata.fname); pause(eps); drawnow;
+    spm_write_vol(Vdata,Ydata); pause(eps); drawnow;
+
+    delete(VV_reslicedRotatedCNN_brainmask.fname); pause(eps); drawnow;
 
     imageType = 'raw_StriatalCNNparcels';
     %
-    [a,b,c] = fileparts(VV_reslicedRotatedCNN_brainmask.fname);
+    [a,b,c] = fileparts(raw_segmentation_filename);
     imagefname = [b c];
 
     store.fname{end+1}=imagefname;
