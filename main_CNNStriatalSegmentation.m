@@ -176,7 +176,7 @@ function [store]= getseparatedROIs(store,filename_n,segmentation_outputs_directo
         Yl=Y; 
         % gather right ROIs
         Y(XYZ(1,:)<0)=0;
-        ROIfilename = fullfile(segmentation_outputs_directory, [anat_or_bold_flag '_right_' ROIs{i} c])
+        ROIfilename = fullfile(segmentation_outputs_directory, [anat_or_bold_flag '_right_' ROIs{i} c]);
         V.fname=ROIfilename;
         spm_write_vol(V,Y);
 
@@ -187,7 +187,7 @@ function [store]= getseparatedROIs(store,filename_n,segmentation_outputs_directo
 
         % gather left ROIs
         Yl(XYZ(1,:)>0)=0;
-        ROIfilename = fullfile(segmentation_outputs_directory, [anat_or_bold_flag '_left_' ROIs{i} c])
+        ROIfilename = fullfile(segmentation_outputs_directory, [anat_or_bold_flag '_left_' ROIs{i} c]);
         V.fname=ROIfilename;
         spm_write_vol(V,Yl);
 
