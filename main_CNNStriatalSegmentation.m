@@ -22,7 +22,7 @@ function [store] = main_CNNStriatalSegmentation(varargin)
     %% end of new part
     numArgIn = length(varargin);
     currentArgNumber = 1;
-    [T1_acpc_template_brain, template_acpc_brainmask, segmentation_outputs_directory, BOLD_template_image] = deal([]);
+    [T1_acpc_template_brain, template_acpc_brainmask, segmentation_outputs_directory, BOLD_template_image, caudateMask, putamenMask] = deal([]);
     while (currentArgNumber <= numArgIn)
         StringCurrentArg = (string(varargin{currentArgNumber}));
         numToAdd = 2;
@@ -35,6 +35,10 @@ function [store] = main_CNNStriatalSegmentation(varargin)
                 segmentation_outputs_directory = varargin{currentArgNumber + 1};
             case "BOLD_template_image"
                 BOLD_template_image = varargin{currentArgNumber + 1};
+            case "caudateMask"
+                caudateMask = varargin{currentArgNumber + 1};
+            case "putamenMask"
+                putamenMask = varargin{currentArgNumber + 1};
             otherwise
                 error("Unrecognized input argument")
         end
@@ -137,7 +141,8 @@ function [store] = main_CNNStriatalSegmentation(varargin)
 
     % For the output image containing the anatomical resolution segmentations, create left and right hemispheric ROI images for each of the 5 whole-brain striatal segmentations, creating a total of 10 ROI images
      filename_n=[segmentation_outputs_directory '/anatRes_templateSpace_striatalCNNparcels.nii'];
-     [store]= getseparatedROIs(store,filename_n,segmentation_outputs_directory,'anat');
+    correctParcellation(filename_n, caudateMask, putamenMask);
+    [store]= getseparatedROIs(store,filename_n,segmentation_outputs_directory,'anat');
 
 
 
