@@ -22,7 +22,7 @@ function [store] = main_CNNStriatalSegmentation(varargin)
     %% end of new part
     numArgIn = length(varargin);
     currentArgNumber = 1;
-    [T1_acpc_template_brain, template_acpc_brainmask, segmentation_outputs_directory, BOLD_template_image, caudateMask, putamenMask] = deal([]);
+    [T1_acpc_template_brain, template_acpc_brainmask, segmentation_outputs_directory, BOLD_template_image, caudateMask, putamenMask, fnirtPathFileName, warpPathFileName] = deal([]);
     while (currentArgNumber <= numArgIn)
         StringCurrentArg = (string(varargin{currentArgNumber}));
         numToAdd = 2;
@@ -39,6 +39,10 @@ function [store] = main_CNNStriatalSegmentation(varargin)
                 caudateMask = varargin{currentArgNumber + 1};
             case "putamenMask"
                 putamenMask = varargin{currentArgNumber + 1};
+            case "fnirtPathFileName"
+                fnirtPathFileName = varargin{currentArgNumber + 1};
+            case "warpPathFileName"
+                warpPathFileName = varargin{currentArgNumber + 1};
             otherwise
                 error("Unrecognized input argument")
         end
@@ -62,12 +66,25 @@ function [store] = main_CNNStriatalSegmentation(varargin)
     end
     template_acpc_brainmask = fullfile(segmentation_outputs_directory, [b c]);
 
-    if (~isempty(BOLD_template_image))
+    if (~isempty(BOLD_template_image) && ~isempty(fnirtPathFileName) && ~isempty(warpPathFileName))
         [a,b,c] = fileparts(BOLD_template_image);
         if(~strcmp(a,segmentation_outputs_directory))
             copyfile(BOLD_template_image,segmentation_outputs_directory);
         end
         BOLD_template_image = fullfile(segmentation_outputs_directory, [b c]);
+
+        [a,b,c] = fileparts(fnirtPathFileName);
+        if(~strcmp(a,segmentation_outputs_directory))
+            copyfile(fnirtPathFileName,segmentation_outputs_directory);
+        end
+        fnirtPathFileName = fullfile(segmentation_outputs_directory, [b c]);
+
+        [a,b,c] = fileparts(warpPathFileName);
+        if(~strcmp(a,segmentation_outputs_directory))
+            copyfile(warpPathFileName,segmentation_outputs_directory);
+        end
+        warpPathFileName = fullfile(segmentation_outputs_directory, [b c]);
+
     end
 
     imageType = 'striatalCNNrotated_templateT1brain';
@@ -136,7 +153,6 @@ function [store] = main_CNNStriatalSegmentation(varargin)
     imagePrefix = [imageType '_'];
     isMask = true;
     [store,anatRes_templateSpace_striatalCNNparcels] = getReslicedCNN_image(store,unrotatedCNN_segmentation,T1_acpc_template_brain,imageType,imagePrefix,isMask);
-
     movefile([segmentation_outputs_directory '/anatRes_templateSpace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii'],[segmentation_outputs_directory '/anatRes_templateSpace_striatalCNNparcels.nii']);
 
     % For the output image containing the anatomical resolution segmentations, create left and right hemispheric ROI images for each of the 5 whole-brain striatal segmentations, creating a total of 10 ROI images
@@ -146,14 +162,14 @@ function [store] = main_CNNStriatalSegmentation(varargin)
 
 
 
-if(~isempty(BOLD_template_image))
+if(~isempty(BOLD_template_image) && ~isempty(fnirtPathFileName) && ~isempty(warpPathFileName))
         imageType = 'BOLDRes_templateSpace_striatalCNNparcels';
-        imagePrefix = [imageType '_'];
-        isMask = true;
-        [store,BOLDRes_templateSpace_striatalCNNparcels] = getReslicedCNN_image(store,unrotatedCNN_segmentation,BOLD_template_image,imageType,imagePrefix,isMask);
-
-        movefile([segmentation_outputs_directory '/BOLDRes_templateSpace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii'],[segmentation_outputs_directory '/BOLDRes_templateSpace_striatalCNNparcels.nii']);
-    
+        % imagePrefix = [imageType '_'];
+        % isMask = true;
+        % [store,BOLDRes_templateSpace_striatalCNNparcels] = getReslicedCNN_image(store,unrotatedCNN_segmentation,BOLD_template_image,imageType,imagePrefix,isMask);
+        [store,BOLDRes_templateSpace_striatalCNNparcels] = resliceAndWarp(store,filename_n,BOLD_template_image,warpPathFileName, fnirtPathFileName, imageType);
+        % movefile([segmentation_outputs_directory '/BOLDRes_templateSpace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii'],[segmentation_outputs_directory '/BOLDRes_templateSpace_striatalCNNparcels.nii']);
+        movefile([BOLDRes_templateSpace_striatalCNNparcels], [segmentation_outputs_directory '/BOLDRes_templateSpace_striatalCNNparcels.nii']);
 	% Create 10 ROIs for bold resolution segmentations, as done for anatomical resolution segmentations
          filename_n=[segmentation_outputs_directory '/BOLDRes_templateSpace_striatalCNNparcels.nii'];
          [store]= getseparatedROIs(store,filename_n,segmentation_outputs_directory,'bold');
@@ -276,6 +292,35 @@ function [store,reslicedRotatedCNN_T1] = getReslicedCNN_image(store,source_T1,re
 
 end
 
+function [store,resliceAndWarpedImage] = resliceAndWarp(store, thisSubjSegmentation_NATpath, MNIt1Path, warpPathFileName, fnirtPathFileName, imageType)
+    %WARP
+    % This function uses wbcommand to warp native space segmentations
+    % into MNI space
+
+    % get output file name (this will be stored in the same directory as the segmentation folder)
+    [path,~,~] = fileparts(MNIt1Path);
+
+    [~,NATsegName,~] = fileparts(thisSubjSegmentation_NATpath);
+    resliceAndWarpedImage = fullfile(path,[NATsegName '_WARPED.nii']);
+
+    command = ['wb_command -volume-resample ' thisSubjSegmentation_NATpath ' ' MNIt1Path ' ENCLOSING_VOXEL ' resliceAndWarpedImage ' -warp ' warpPathFileName ' -fnirt ' fnirtPathFileName];
+    status = system(command);
+
+
+    if ~status
+        disp(['Successfully warped ' NATsegName]);
+        system(['chmod 775 ' resliceAndWarpedImage]);
+    else
+        warning(['Segmentation error while resampling for ' NATsegName]);
+    end
+
+    [a,b,c] = fileparts(resliceAndWarpedImage);
+    imagefname = [b c];
+    store.fname{end+1}=imagefname;
+    store.imagetype{end+1}=imageType;
+
+
+end
 
 function [out,mri] = pythonCNNstriatalSegmentation(segmentation_python_code , T1_acpc_restore_brain, segmentation_python_output_intermediate_fullpath, segmentation_network_weights_directory, segmentation_outputs_directory)
     disp('Deploying CNN Striatal Segmentation python script.'); pause(eps); drawnow;
