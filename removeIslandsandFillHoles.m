@@ -12,8 +12,7 @@ function Y = removeIslandsandFillHoles(filename_n, mode)
         mkdir(intermediateDirPath);
     end
 
-    V = spm_vol(filename_n);
-    [Y,XYZ] = spm_read_vols(V);
+    [V,Y,XYZ] = tippVol(filename_n);
 
     switch mode
         case 'VST'

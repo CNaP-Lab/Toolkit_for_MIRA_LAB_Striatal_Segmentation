@@ -1,5 +1,6 @@
 # Toolkit_for_MIRA_LAB_Striatal_Segmentation (https://github.com/MMTI/Toolkit_for_MIRA_LAB_Striatal_Segmentation)
-Authors: John C. Williams, MS, Srineil Nizambad, BS, Mario Serrano-Sosa, PhD, Karl Spuhler, PhD, Jared X. Van Snellenberg, PhD, and Chuan Huang, PhD.
+
+Authors: John C. Williams, MS, Srineil Nizambad, BS, Yash Patel, MS, Mario Serrano-Sosa, PhD, Karl Spuhler, PhD, Jared X. Van Snellenberg, PhD, and Chuan Huang, PhD.
 Authors/developers of original CNN Striatal Segmentation Python code (https://github.com/MIRA-Lab-stack/Striatal_Segmentation): Mario Serrano-Sosa, PhD, Karl Spuhler, PhD, and Chuan Huang, PhD.
 
 Table of Contents:
@@ -22,24 +23,28 @@ This is a pipeline that produces CNN-based segmentations of the striatal regions
 Serrano-Sosa M, Van Snellenberg JX, Meng J, Luceno JR, Spuhler K, Weinstein JJ, Abi-Dargham A, Slifstein M, Huang C. Multitask Learning Based Three-Dimensional Striatal Segmentation of MRI: fMRI and PET Objective Assessments. J Magn Reson Imaging. 2021 Nov;54(5):1623-1635. doi: 10.1002/jmri.27682. Epub 2021 May 10. PMID: 33970510; PMCID: PMC9204799.
 The original Python code ((https://github.com/MIRA-Lab-stack/Striatal_Segmentation), which was slightly modified for usability on other systems (e.g., removing hard-coded paths), was developed by Mario Serrano-Sosa, PhD and the Medical Image Research and Analysis (MIRA) Labratory, directed by Chuan Huang PhD, Associate Professor of Radiology at Emory University (previously at  Stony Brook University School of Medicine).
 This toolkit allows a user to utilize this CNN striatal segmentation, handling user inputs and performing all required image manipulations.  The user provides a native or MNI-space structual image, a brain mask in the same space, and, optionally, a BOLD fMRI template image to reslice the output into.  Outputs are returned in the input anatomical space and both anatomical and BOLD resolutions (latter optional).
-The toolkit was developed by John C. Williams, Srineil Nizambad, and Jared X. Van Snellenberg, at the Cognitive Neuroscience and Psychosis Lab at Stony Brook University School of Medicine.
+The toolkit was developed by John C. Williams, Srineil Nizambad, Yash Patel and Jared X. Van Snellenberg, at the Cognitive Neuroscience and Psychosis Lab at Stony Brook University School of Medicine.
 
 The striatal regions of interest (ROIs) segmented are the: ventral striatum (VST), pre-commissural putamen (prePU), post-commissural putamen (postPU), pre-commissural caudate (preCA), post-commissural caudate (postCA).
 
-The user provides a T1-weighted structural MRI image in ACPC orientation, a corresponding brain mask in ACPC orientation, and, optionally, a BOLD functional MRI template image for use in reslicing the outputs to BOLD resolution.
+The user provides a T1-weighted structural MRI image in ACPC orientation, a corresponding brain mask in ACPC orientation, and, optionally, a BOLD functional MRI template image, warp image and fnirt image for use in reslicing and warping the outputs to BOLD resolution.
 
-The following outputs are produced: a NIfTI image containing segmentations that can be overlaid on the T1 image and 10 separate NIfTI images for right and left hemispheric divisions of each of the 5 striatal ROIs segmented, in T1-based resolution. If the optional BOLD fMRI template image was specified, an additional NIfTI image containing segmentations that can be overlaid on the fMRI image and 10 separate NIfTI images for right and left hemispheric divisions of each of the 5 striatal ROIs segmented are produced, in BOLD-based resolution.
+The following outputs are produced: a NIfTI image containing segmentations that can be overlaid on the T1 image and 10 separate NIfTI images for right and left hemispheric divisions of each of the 5 striatal ROIs segmented, in T1-based resolution. If the optional BOLD fMRI template image was specified, an additional NIfTI image containing segmentations that can be overlaid on the fMRI image and 10 separate NIfTI images for right and left hemispheric divisions of each of the 5 striatal ROIs segmented are produced, in BOLD-based resolution in MNI space.
 
-The main operating script of the pipeline is main_CNNStriatalSegmentation.m. This script is called by CNNStriatalSegmentation_wrapper_script.m, which has a set of parameters that the user is instructed to adjust therein. Full running operations are discussed in the second section, RUNNING INSTRUCTIONS.
+The main operating script of the pipeline is main_CNNStriatalSegmentation.m. This script is called by CNNStriatalSegmentation_example_script.m, which has a set of parameters that the user is instructed to adjust therein. Full running operations are discussed in the second section, RUNNING INSTRUCTIONS.
 
 SPM12 must be on your MATLAB path for this to work.  You can download it from https://www.fil.ion.ucl.ac.uk/spm/software/download/ .
 
 INPUTS:
 
-1. T1-weighted structural MRI image in ACPC orientation (normalized to MNI space or otherwise), e.g., MNINonLinear/T1w_restore_brain.nii
-2. Template brain mask in ACPC orientation, in the same space as the T1w template, e.g., MNINonLinear/brainmask_fs.nii
-3. Output directory
-4. OPTIONAL: BOLD functional MRI image, in the same space and orientation as the T1w template image, but in any desired resolution, e.g., MNINonLinear/Results/RSFC_fMRI_1/RSFC_fMRI_1.nii.  This impage will be used to reslice the outputs, generated from high-resolution anatomical T1w images, to the resolution of the desired BOLD image.
+1. `<T1 template filename>` (e.g., ...MNINonLinear/T1w_restore_brain.nii)
+2. `<brainmask template filename>` (e.g., ...MNINonLinear/brainmask_fs.nii)
+3. `<Segmentation Output Directory>` (e.g., /mnt/drive/outputdir)
+4. `<BOLD template filename>` (image to reslice (resample) to, can be a BOLD image; e.g., ...MNINonLinear/Results/RSFC_fMRI_1/RSFC_fMRI_1.nii)
+5. `<Caudate Mask>` (e.g., ...caudateMask.nii)
+6. `<Putamen Mask>` (e.g., ...putamenMask.nii)
+7. `<warpPathFileName>` (the warp from acpc_dc space to MNI space; e.g., AC-PC aligned, distortion corrected, bias field corrected, native subject space to MNI space .../acpc_dc2standard.nii.gz)
+8. `<fnirtPathFileName>` (the template T1 image used by FNIRT during preprocessing to generate the warp; e.g., Here the acpc aligned, distortion corrected, bias field corrected T1w image .../T1w_acpc_dc_restore.nii.gz)
 
 OUTPUTS*:
 
@@ -55,9 +60,9 @@ OUTPUTS*:
 10. anat_left_VST.nii
 11. anat_right_VST.nii
 
-OPTIONAL OUTPUTS (if BOLD functional MRI is provided):
+OPTIONAL OUTPUTS (if BOLD functional MRI, warpPath and fnirtPath are provided):
 
-12. BOLDRes_templateSpace_striatalCNNparcels.nii
+12. BOLDRes_templateSpace_striatalCNNparcels_WARPED.nii
 13. bold_left_prePU.nii
 14. bold_right_prePU.nii
 15. bold_left_preCA.nii
@@ -72,36 +77,47 @@ OPTIONAL OUTPUTS (if BOLD functional MRI is provided):
 Several intermediates are also generated and discussed in PIPELINE STEPS.
 
 EXAMPLE:
-main_CNNStriatalSegmentation('T1_acpc_template_brain',T1_acpc_template_brain, ...
-    'template_acpc_brainmask',template_acpc_brainmask, ...
-    'segmentation_outputs_directory',segmentation_outputs_directory, ...
-    'BOLD_template_image',BOLD_template_image);
+
+```
+main_CNNStriatalSegmentation('T1_acpc_template_brain',T1_acpc_template_brain,...
+        'template_acpc_brainmask',template_acpc_brainmask,...
+        'BOLD_template_image',BOLD_template_image,...
+        'segmentation_outputs_directory',segmentation_outputs_directory,...
+        'caudateMask', caudateMask,...
+        'putamenMask', putamenMask,...
+        'warpPathFileName', warpPathFileName,...
+        'fnirtPathFileName', fnirtPathFileName);
+```
 
 ## RUNNING INSTRUCTIONS:
 
 1. Prior to downloading this GitHub repository on your system, ensure that you have the right versions of Python and required dependencies on your system. Refer to REQUIRED DEPENDENCIES, PYTHON VERSION, AND OTHER FILES, to ensure you have the proper versions of Python and required libraries. Please also ensure you have SPM12 on your system, which may be downloaded here: https://www.fil.ion.ucl.ac.uk/spm/software/spm12/.
 2. Download this GitHub repository onto your system.
 3. Within the checkpoint file, please replace “/mnt/jxvs2_02/neil/StriatalSegmentation/“ to where your subfolder StriatalSegmentation is located.
-4. Adjust the necessary parameters in CNNStriatalSegmentation_wrapper_script.m; supply the paths for the files and subfolders as instructed therein and as described below.
+4. Adjust the necessary parameters in CNNStriatalSegmentation_example_script.m; supply the paths for the files and subfolders as instructed therein and as described below.
 
-   For each run of the pipeline involving different subjects, the following are required and the paths must be adjusted:   segmentation_outputs_directory, T1_acpc_template_brain,template_acpc_brainmask.  The following input is optional: BOLD_template_image.
+   For each run of the pipeline involving different subjects, the following are required and the paths must be adjusted:   T1_acpc_template_brain, template_acpc_brainmask, segmentation_outputs_directory, caudateMask and putamenMask.  The following input is optional: BOLD_template_image, warpPathFileName, fnirtPathFileName.
 
-   1. segmentation_outputs_directory refers to the directory where all final and intermediate outputs of this CNN pipeline will be saved for each subject run.
-   2. T1_acpc_template_brain refers to the path of the T1 weighted MRI image (in NAT space) relating to the subject used for this run.
-   3. template_acpc_brainmask refers to the path of the brain mask relating to the subject used for this run.
-   4. Bold_template_image refers to the path of the bold functional MRI image relating to the subject used for this run.
-5. Ensure SPM12 and tippVol are on your path in MATLAB and run the script CNNStriatalSegmentation_wrapper_script.m.
-6. You may now inspect your final striatal segmentations for both your structural and functional images, found in the segmentation_outputs_directory (whose path you edited in CNNStriatalSegmentation_wrapper_script.m from step 5), in an image viewer of your choice. Our team used MRIcron, a free tool readily available at: https://www.nitrc.org/projects/mricron. The directory also contains intermediates generated in the pipeline, which may be viewed.
+   1. T1_acpc_template_brain refers to the path of the T1 weighted MRI image (in NAT space) relating to the subject used for this run.
+   2. template_acpc_brainmask refers to the path of the brain mask relating to the subject used for this run.
+   3. segmentation_outputs_directory refers to the directory where all final and intermediate outputs of this CNN pipeline will be saved for each subject run.
+   4. Bold_template_image refers to the path of the bold functional MRI image relating to the subject used for this run. This image is used to reslice (resample) to.
+   5. CaudateMask is the mask in native space applied to ensure the segmentation adheres to the anatomical boundaries defined by the mask.
+   6. PutamenMask is the mask in native space applied to ensure the segmentation adheres to the anatomical boundaries defined by the mask.
+   7. WarpPathFileName is the warp from acpc_dc space to MNI space, `acpc_dc2standard.nii.gz` The warp is from AC-PC aligned, distortion corrected, bias field corrected, native subject space to MNI space
+   8. fnirtPathFileName is the template T1 image used by FNIRT during preprocessing to generate the warp above. Here the acpc aligned, distortion corrected, bias field corrected T1w image, `T1w_acpc_dc_restore.nii.gz`
+5. Ensure SPM12 and tippVol are on your path in MATLAB and run the script CNNStriatalSegmentation_example_script.m.
+6. You may now inspect your final striatal segmentations for both your structural and functional images, found in the segmentation_outputs_directory (whose path you edited in CNNStriatalSegmentation_example_script.m from step 5), in an image viewer of your choice. Our team used MRIcron, a free tool readily available at: https://www.nitrc.org/projects/mricron. The directory also contains intermediates generated in the pipeline, which may be viewed.
 
 The final anatomical resolution segmentation mask is named:
 anatRes_templateSpace_striatalCNNparcels.nii. The 10 separate hemispheric-specific ROI images produced are named: anat_left_prePU.nii,anat_right_prePU.nii,anat_left_preCA.nii,anat_right_preCA.nii,anat_left_postCA.nii,anat_right_postCA.nii,anat_left_postPU.nii,anat_right_postPU.nii, anat_left_VST.nii,anat_right_VST.nii.
 
-If the optional BOLD fMRI template image is specified, the final BOLD fMRI resolution segmentation mask is additionally produced and named:
-BOLDRes_templateSpace_striatalCNNparcels.nii. The 10 separate hemispheric-specific ROI images produced are named: bold_left_prePU.nii,bold_right_prePU.nii,bold_left_preCA.nii,bold_right_preCA.nii,bold_left_postCA.nii,bold_right_postCA.nii,bold_left_postPU.nii,bold_right_postPU.nii, bold_left_VST.nii,bold_right_VST.nii.
+If the optional BOLD fMRI template image is specified, the final BOLD fMRI resolution segmentation mask in MNI space is additionally produced and named:
+BOLDRes_templateSpace_striatalCNNparcels_WARPED.nii. The 10 separate hemispheric-specific ROI images produced are named: bold_left_prePU.nii,bold_right_prePU.nii,bold_left_preCA.nii,bold_right_preCA.nii,bold_left_postCA.nii,bold_right_postCA.nii,bold_left_postPU.nii,bold_right_postPU.nii, bold_left_VST.nii,bold_right_VST.nii.
 
 ## PIPELINE STEPS
 
-1. The main script (main_CNNStriatalSegmentation.m) reads arguments given by the user in CNNStriatalSegmentation_wrapper_script.m for the paths of two categories of objects: the inputs to the pipeline and internal files/working directories for the pipeline.
+1. The main script (main_CNNStriatalSegmentation.m) reads arguments given by the user in CNNStriatalSegmentation_example_script.m for the paths of two categories of objects: the inputs to the pipeline and internal files/working directories for the pipeline.
 2. The structural MRI image (T1) is rotated 90 degree (with the getRotatedCNN_image subfunction). An intermediate is generated from the T1 template image, with the prefix: striatalCNNrotated_.
 3. The brain mask is rotated 90 degrees (with the getRotatedCNN_image subfunction). An intermediate is generated from the brain mask, with the prefix: striatalCNNrotated_.
 4. The rotated T1 image is resliced according to the resolution of the CNN reslice template, using 7th degree spline interpolation in SPM (with the getReslicedCNN_image subfunction). In this reslicing run as well as in all future runs, wrapping is turned on in the x, y, and z directions. An intermediate is generated from the T1 template image, with the prefix: striatalCNNres_striatalCNNrotated_.
@@ -112,23 +128,32 @@ BOLDRes_templateSpace_striatalCNNparcels.nii. The 10 separate hemispheric-specif
 9. The image containing the striatal segmentations is rotated 90 degrees in the direction opposite of that from step 2. The generated intermediate is: striatalCNN_unrotated_raw_StriatalCNNparcels.nii.
 10. a)The segmentations are resliced according to the resolution of the original T1 weighted MRI image input using 7th degree spline interpolation in SPM. The first final output, anatRes_templateSpace_striatalCNNparcels.nii, is generated.
 
-    b) Through the subfunction getseparatedROIs, the 5 whole-brain ROIs segmented in the anatRes_templateSpace_striatalCNNparcels.nii are separated and split between the left and right hemispheres to produce 10 hemispheric-specific ROIs, which are saved as separate NIfTI images: anat_left_prePU.nii,anat_right_prePU.nii,anat_left_preCA.nii,anat_right_preCA.nii, anat_left_postCA.nii,anat_right_postCA.nii,anat_left_postPU.nii,anat_right_postPU.nii, anat_left_VST.nii,anat_right_VST.nii.
+    b) Now the corrections in the anatRes_templateSpace_striatalCNNparcels.nii is made using the user inputted Caudate and Putamen masks. The correction is based on anatomical Boundaries and adjacency of voxels. This process involves:
 
-    This is achieved by having the product of step 10a set equal to zero for all values not equal to the integer representing the nth ROI in consideration. Since the product of 10a is an image where each voxel is either assigned to an integer representing each of the 5 ROIs (1-5) or not assigned to any ROI (0), each ROI can be separated as aforementioned. For each whole-brain ROI, the right and left hemispheric divisions of the ROI can be captured by setting the image to zero at indices that represent negative XYZ coordinates (as gathered by spm_read_vols) and positive XYZ coordinates, respectively.
+    1. **Loading the Initial CNN Output** : The initial segmentation results are loaded, identifying regions marked as caudate, putamen and Ventral Striatum.
+    2. **Applying the Masks** : The user-provided caudate and putamen masks are applied to ensure the segmentation adheres to the anatomical boundaries defined by these masks.
+    3. **Dilating and Adjusting Based on Adjacency and Bounds** : The toolkit performs a dilation operation within the confines of the provided masks, considering the adjacency of segmented regions. This step ensures that the segmentation expands to cover relevant areas while respecting anatomical constraints.
+    4. **Finalizing the Corrected Parcellation** : The corrected segmentation is saved, reflecting adjustments made using the caudate and putamen masks.
+
+    c) Through the subfunction getseparatedROIs, the 5 whole-brain ROIs segmented in the anatRes_templateSpace_striatalCNNparcels.nii are separated and split between the left and right hemispheres to produce 10 hemispheric-specific ROIs, which are saved as separate NIfTI images: anat_left_prePU.nii,anat_right_prePU.nii,anat_left_preCA.nii,anat_right_preCA.nii, anat_left_postCA.nii,anat_right_postCA.nii,anat_left_postPU.nii,anat_right_postPU.nii, anat_left_VST.nii,anat_right_VST.nii.
+
+    This is achieved by having the product of step 10a set equal to zero for all values not equal to the integer representing the nth ROI in consideration. Since the product of 10a is an image where each voxel is either assigned to an integer representing each of the 5 ROIs (1-5) or not assigned to any ROI (0), each ROI can be separated as aforementioned. For each whole-brain ROI, the right and left hemispheric divisions of the ROI can be captured by setting the image to zero at indices that represent negative XYZ coordinates (as gathered by tippVol) and positive XYZ coordinates, respectively.
 11. (Optional)
 
-    a) If the user specifies a BOLD fMRI template image, then an additional output image is generated so that the segmentations following step 9 are resliced according to the resolution of the BOLD image, using 7th degree spline interpolation. This output is BOLDRes_templateSpace_striatalCNNparcels.nii.
+    a) If the user specifies a BOLD fMRI template image, Warp image and the Fnirt image then an additional output image is generated from anatRes_templateSpace_striatalCNNparcels.nii leveraging the wb_command's functionality to reslice to BOLD resolution and warp to MNI space. This output is BOLDRes_templateSpace_striatalCNNparcels_WARPED.nii.
 
-    b) Similar to step 10b, 10 ROIs are produced based on the segmentations in the BOLDRes_templateSpace_striatalCNNparcels.nii image. These are: bold_left_prePU.nii,bold_right_prePU.nii,bold_left_preCA.nii,bold_right_preCA.nii, bold_left_postCA.nii,bold_right_postCA.nii,bold_left_postPU.nii,bold_right_postPU.nii, bold_left_VST.nii,bold_right_VST.nii
+    b) Similar to step 10c, 10 ROIs are produced based on the segmentations in the BOLDRes_templateSpace_striatalCNNparcels_WARPED.nii image. These are: bold_left_prePU.nii,bold_right_prePU.nii,bold_left_preCA.nii,bold_right_preCA.nii, bold_left_postCA.nii,bold_right_postCA.nii,bold_left_postPU.nii,bold_right_postPU.nii, bold_left_VST.nii,bold_right_VST.nii
 
 INPUTS:
 
 1. `<T1 template filename>` (e.g., ...MNINonLinear/T1w_restore_brain.nii)
-3. `<brainmask template filename>` (e.g., ...MNINonLinear/brainmask_fs.nii)
-4. `<BOLD template filename>` (e.g., ...MNINonLinear/Results/RSFC_fMRI_1/RSFC_fMRI_1.nii)
-5. `<Segmentation Output Directory>` (e.g., /mnt/drive/outputdir)
-6. `<Caudate Mask>` (e.g., ...caudateMask.nii)
-7. `<Putamen Mask>` (e.g., ...putamenMask.nii)
+2. `<brainmask template filename>` (e.g., ...MNINonLinear/brainmask_fs.nii)
+3. `<Segmentation Output Directory>` (e.g., /mnt/drive/outputdir)
+4. `<BOLD template filename>` (image to reslice (resample) to, can be a BOLD image; e.g., ...MNINonLinear/Results/RSFC_fMRI_1/RSFC_fMRI_1.nii)
+5. `<Caudate Mask>` (e.g., ...caudateMask.nii)
+6. `<Putamen Mask>` (e.g., ...putamenMask.nii)
+7. `<warpPathFileName>` (the warp from acpc_dc space to MNI space; e.g., AC-PC aligned, distortion corrected, bias field corrected, native subject space to MNI space .../acpc_dc2standard.nii.gz)
+8. `<fnirtPathFileName>` (the template T1 image used by FNIRT during preprocessing to generate the warp; e.g., Here the acpc aligned, distortion corrected, bias field corrected T1w image .../T1w_acpc_dc_restore.nii.gz)
 
 OUTPUTS, INCLUDING INTERMEDIATES:
 
@@ -152,34 +177,18 @@ OUTPUTS, INCLUDING INTERMEDIATES:
 	18. anat_right_VST.nii
 	19. `<Segmentation Output Directory>`/Intermediates/*intermediate files for clustering and removing holes*
 
-    (19-29 are OPTIONAL, dependent on whether a BOLD fMRI input is provided)
-	19. BOLDRes_templateSpace_striatalCNNparcels.nii
-	20. bold_left_prePU.nii
-	21. bold_right_prePU.nii
-	22. bold_left_preCA.nii
-	23. bold_right_preCA.nii
-	24. bold_left_postCA.nii
-	25. bold_right_postCA.nii
-	26. bold_left_postPU.nii
-	27. bold_right_postPU.nii
-	28. bold_left_VST.nii
-	29. bold_right_VST.nii
-
-
-## UPDATE
-
-This toolkit now requires user-specified masks for the caudate and putamen regions to enhance the accuracy of striatal segmentations. Following the initial CNN-based segmentation, the toolkit further refines the parcellation by adjusting the boundaries based on the provided masks and considering the adjacency of segmented regions.
-
-This correction process involves:
-
-1. **Loading the Initial CNN Output** : The initial segmentation results are loaded, identifying regions marked as caudate, putamen and Ventral Striatum.
-2. **Applying the Masks** : The user-provided caudate and putamen masks are applied to ensure the segmentation adheres to the anatomical boundaries defined by these masks.
-3. **Dilating and Adjusting Based on Adjacency and Bounds** : The toolkit performs a dilation operation within the confines of the provided masks, considering the adjacency of segmented regions. This step ensures that the segmentation expands to cover relevant areas while respecting anatomical constraints.
-4. **Finalizing the Corrected Parcellation** : The corrected segmentation is saved, reflecting adjustments made using the caudate and putamen masks.
-
-Users can then run the `main_CNNStriatalSegmentation` function, specifying the paths to the caudate and putamen masks as input arguments. Two additional inputs have been added as listed above.
-
-
+    (20-30 are OPTIONAL, dependent on whether a BOLD fMRI input, warpPath input and FnirtPath input are provided)
+	20. BOLDRes_templateSpace_striatalCNNparcels_WARPED.nii
+	21. bold_left_prePU.nii
+	22. bold_right_prePU.nii
+	23. bold_left_preCA.nii
+	24. bold_right_preCA.nii
+	25. bold_left_postCA.nii
+	26. bold_right_postCA.nii
+	27. bold_left_postPU.nii
+	28. bold_right_postPU.nii
+	29. bold_left_VST.nii
+	30. bold_right_VST.nii
 
 ## REQUIRED DEPENDENCIES, PYTHON VERSION, AND OTHER FILES
 

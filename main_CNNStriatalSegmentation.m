@@ -187,8 +187,7 @@ function [store]= getseparatedROIs(store,filename_n,segmentation_outputs_directo
      ROIs = {'prePU','preCA','postCA','postPU','VST'};
 
      [a,b,c]=fileparts(filename_n);
-     V=spm_vol(filename_n);
-     [Y,XYZ]=spm_read_vols(V);
+     [V,Y,XYZ]=tippVol(filename_n);
      Ycopy=Y;
      for i=1:5
         Y=Ycopy;
@@ -199,7 +198,7 @@ function [store]= getseparatedROIs(store,filename_n,segmentation_outputs_directo
         Y(XYZ(1,:)<0)=0;
         ROIfilename = fullfile(segmentation_outputs_directory, [anat_or_bold_flag '_right_' ROIs{i} c]);
         V.fname=ROIfilename;
-        spm_write_vol(V,Y);
+        tippWriteVol(V,Y,V.fname);
 
         [aa,bb,cc]=fileparts(V.fname);
         imagefname=[bb cc];
@@ -210,7 +209,7 @@ function [store]= getseparatedROIs(store,filename_n,segmentation_outputs_directo
         Yl(XYZ(1,:)>0)=0;
         ROIfilename = fullfile(segmentation_outputs_directory, [anat_or_bold_flag '_left_' ROIs{i} c]);
         V.fname=ROIfilename;
-        spm_write_vol(V,Yl);
+        tippWriteVol(V,Yl,V.fname);
 
         [aa,bb,cc]=fileparts(V.fname);
         imagefname=[bb cc];
@@ -247,7 +246,7 @@ function [store,rotatedFileText] = getRotatedCNN_image(store,T1_filename,segment
     elseif (existInclSymlinks(rotatedFileText))
         tryToDeleteSymlink(rotatedFileText);
     end
-    spm_write_vol(VV,YY); pause(eps); drawnow;
+    tippWriteVol(VV,YY,VV.fname); pause(eps); drawnow;
 
 
     [a,b,c] = fileparts(VV.fname);
@@ -413,7 +412,7 @@ function [store,raw_segmentation_filename] = segmentation_postprocessing(store,o
     end
     [a,b,c] = fileparts(VV_reslicedRotatedCNN_brainmask.fname);
     VV_reslicedRotatedCNN_brainmask.fname = fullfile(a,[b '_temp' c]);
-    spm_write_vol(VV_reslicedRotatedCNN_brainmask,out); pause(eps); drawnow;
+    tippWriteVol(VV_reslicedRotatedCNN_brainmask,out,VV_reslicedRotatedCNN_brainmask.fname); pause(eps); drawnow;
 
     %Remove voxels too far from the origin
     [segmentationHeader,segmentationData] = ...
@@ -447,7 +446,7 @@ function [store,raw_segmentation_filename] = segmentation_postprocessing(store,o
     Ydata(~Ymask(:)) = 0; %Mask out anything outside of the mask
 
     delete(Vdata.fname); pause(eps); drawnow;
-    spm_write_vol(Vdata,Ydata); pause(eps); drawnow;
+    tippWriteVol(Vdata,Ydata,Vdata.fname); pause(eps); drawnow;
 
     delete(VV_reslicedRotatedCNN_brainmask.fname); pause(eps); drawnow;
 
