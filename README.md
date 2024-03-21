@@ -40,10 +40,10 @@ INPUTS:
 1. `<T1 template filename>` (e.g., ...MNINonLinear/T1w_restore_brain.nii)
 2. `<brainmask template filename>` (e.g., ...MNINonLinear/brainmask_fs.nii)
 3. `<Segmentation Output Directory>` (e.g., /mnt/drive/outputdir)
-4. `<BOLD template filename>` (image to reslice (resample) to, can be a BOLD image; e.g., ...MNINonLinear/Results/RSFC_fMRI_1/RSFC_fMRI_1.nii)
-5. `<Caudate Mask>` (e.g., ...caudateMask.nii)
-6. `<Putamen Mask>` (e.g., ...putamenMask.nii)
-7. `<warpPathFileName>` (the warp from acpc_dc AC-PC aligned, distortion corrected, bias field corrected, native subject space to MNI space .../acpc_dc2standard.nii.gz)
+4. `<Caudate Mask>` (e.g., ...caudateMask.nii)
+5. `<Putamen Mask>` (e.g., ...putamenMask.nii)
+6. `<BOLD template filename>` (image to reslice (resample) to, can be a BOLD image; e.g., ...MNINonLinear/Results/RSFC_fMRI_1/RSFC_fMRI_1.nii)
+7. `<warpPathFileName>` (the warp from AC-PC aligned, distortion corrected, bias field corrected, native subject space to MNI space .../acpc_dc2standard.nii.gz)
 8. `<fnirtPathFileName>` (the template T1 image used by FNIRT during preprocessing to generate the warp; which is typically the AC-PC aligned, distortion corrected, bias field corrected T1w image .../T1w_acpc_dc_restore.nii.gz)
 
 OUTPUTS*:
@@ -81,10 +81,10 @@ EXAMPLE:
 ```
 main_CNNStriatalSegmentation('T1_acpc_template_brain',T1_acpc_template_brain,...
         'template_acpc_brainmask',template_acpc_brainmask,...
-        'BOLD_template_image',BOLD_template_image,...
         'segmentation_outputs_directory',segmentation_outputs_directory,...
         'caudateMask', caudateMask,...
         'putamenMask', putamenMask,...
+	'BOLD_template_image',BOLD_template_image,...
         'warpPathFileName', warpPathFileName,...
         'fnirtPathFileName', fnirtPathFileName);
 ```
@@ -98,14 +98,14 @@ main_CNNStriatalSegmentation('T1_acpc_template_brain',T1_acpc_template_brain,...
 
    For each run of the pipeline involving different subjects, the following are required and the paths must be adjusted:   T1_acpc_template_brain, template_acpc_brainmask, segmentation_outputs_directory, caudateMask and putamenMask.  The following input is optional: BOLD_template_image, warpPathFileName, fnirtPathFileName.
 
-   1. T1_acpc_template_brain refers to the path of the T1 weighted MRI image (in NAT space) relating to the subject used for this run.
-   2. template_acpc_brainmask refers to the path of the brain mask relating to the subject used for this run.
-   3. segmentation_outputs_directory refers to the directory where all final and intermediate outputs of this CNN pipeline will be saved for each subject run.
-   4. Bold_template_image refers to the path of the bold functional MRI image relating to the subject used for this run. This image is used to reslice (resample) to.
-   5. CaudateMask is the mask in native space applied to ensure the segmentation adheres to the anatomical boundaries defined by the mask.
-   6. PutamenMask is the mask in native space applied to ensure the segmentation adheres to the anatomical boundaries defined by the mask.
-   7. WarpPathFileName is the warp from acpc_dc space to MNI space, `acpc_dc2standard.nii.gz` The warp is from AC-PC aligned, distortion corrected, bias field corrected, native subject space to MNI space
-   8. fnirtPathFileName is the template T1 image used by FNIRT during preprocessing to generate the warp above. Here the acpc aligned, distortion corrected, bias field corrected T1w image, `T1w_acpc_dc_restore.nii.gz`
+1. T1_acpc_template_brain refers to the path of the T1 weighted MRI image (in NAT space) relating to the subject used for this run.
+2. template_acpc_brainmask refers to the path of the brain mask relating to the subject used for this run.
+3. segmentation_outputs_directory refers to the directory where all final and intermediate outputs of this CNN pipeline will be saved for each subject run.
+4. Bold_template_image refers to the path of the bold functional MRI image relating to the subject used for this run. This image is used to reslice (resample) to.
+5. CaudateMask is the mask in native space applied to ensure the segmentation adheres to the anatomical boundaries defined by the mask.
+6. PutamenMask is the mask in native space applied to ensure the segmentation adheres to the anatomical boundaries defined by the mask.
+7. WarpPathFileName is the warp from AC-PC aligned, distortion corrected, bias field corrected, native subject space to MNI space, `acpc_dc2standard.nii.gz` in HCP MPP preprocessed data.
+8. fnirtPathFileName is the template T1 image used by FNIRT during preprocessing to generate the warp above, typically the acpc aligned, distortion corrected, bias field corrected T1w image, `T1w_acpc_dc_restore.nii.gz` in HCP MPP preprocessed data.
 5. Ensure SPM12 and tippVol are on your path in MATLAB and run the script CNNStriatalSegmentation_example_script.m.
 6. You may now inspect your final striatal segmentations for both your structural and functional images, found in the segmentation_outputs_directory (whose path you edited in CNNStriatalSegmentation_example_script.m from step 5), in an image viewer of your choice. Our team used MRIcron, a free tool readily available at: https://www.nitrc.org/projects/mricron. The directory also contains intermediates generated in the pipeline, which may be viewed.
 
@@ -149,10 +149,10 @@ INPUTS:
 1. `<T1 template filename>` (e.g., ...MNINonLinear/T1w_restore_brain.nii)
 2. `<brainmask template filename>` (e.g., ...MNINonLinear/brainmask_fs.nii)
 3. `<Segmentation Output Directory>` (e.g., /mnt/drive/outputdir)
-4. `<BOLD template filename>` (image to reslice (resample) to, can be a BOLD image; e.g., ...MNINonLinear/Results/RSFC_fMRI_1/RSFC_fMRI_1.nii)
-5. `<Caudate Mask>` (e.g., ...caudateMask.nii)
-6. `<Putamen Mask>` (e.g., ...putamenMask.nii)
-7. `<warpPathFileName>` (the warp from acpc_dc space to MNI space; e.g., AC-PC aligned, distortion corrected, bias field corrected, native subject space to MNI space .../acpc_dc2standard.nii.gz)
+4. `<Caudate Mask>` (e.g., ...caudateMask.nii)
+5. `<Putamen Mask>` (e.g., ...putamenMask.nii)
+6. `<BOLD template filename>` (image to reslice (resample) to, can be a BOLD image; e.g., ...MNINonLinear/Results/RSFC_fMRI_1/RSFC_fMRI_1.nii)
+7. `<warpPathFileName>` (the warp from AC-PC aligned, distortion corrected, bias field corrected, native subject space to MNI space; e.g., .../acpc_dc2standard.nii.gz)
 8. `<fnirtPathFileName>` (the template T1 image used by FNIRT during preprocessing to generate the warp; e.g., Here the acpc aligned, distortion corrected, bias field corrected T1w image .../T1w_acpc_dc_restore.nii.gz)
 
 OUTPUTS, INCLUDING INTERMEDIATES:
