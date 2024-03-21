@@ -1,6 +1,6 @@
 # Toolkit_for_MIRA_LAB_Striatal_Segmentation (https://github.com/MMTI/Toolkit_for_MIRA_LAB_Striatal_Segmentation)
 
-Authors: John C. Williams, MS, Srineil Nizambad, BS, Yash Patel, MS, Mario Serrano-Sosa, PhD, Karl Spuhler, PhD, Jared X. Van Snellenberg, PhD, and Chuan Huang, PhD.
+Authors: John C. Williams, MS, Srineil Nizambad, BS, Yash Patel, MS, Philip Tubiolo, MS, Mario Serrano-Sosa, PhD, Karl Spuhler, PhD, Jared X. Van Snellenberg, PhD, and Chuan Huang, PhD.
 Authors/developers of original CNN Striatal Segmentation Python code (https://github.com/MIRA-Lab-stack/Striatal_Segmentation): Mario Serrano-Sosa, PhD, Karl Spuhler, PhD, and Chuan Huang, PhD.
 
 Table of Contents:
@@ -43,8 +43,8 @@ INPUTS:
 4. `<BOLD template filename>` (image to reslice (resample) to, can be a BOLD image; e.g., ...MNINonLinear/Results/RSFC_fMRI_1/RSFC_fMRI_1.nii)
 5. `<Caudate Mask>` (e.g., ...caudateMask.nii)
 6. `<Putamen Mask>` (e.g., ...putamenMask.nii)
-7. `<warpPathFileName>` (the warp from acpc_dc space to MNI space; e.g., AC-PC aligned, distortion corrected, bias field corrected, native subject space to MNI space .../acpc_dc2standard.nii.gz)
-8. `<fnirtPathFileName>` (the template T1 image used by FNIRT during preprocessing to generate the warp; e.g., Here the acpc aligned, distortion corrected, bias field corrected T1w image .../T1w_acpc_dc_restore.nii.gz)
+7. `<warpPathFileName>` (the warp from acpc_dc AC-PC aligned, distortion corrected, bias field corrected, native subject space to MNI space .../acpc_dc2standard.nii.gz)
+8. `<fnirtPathFileName>` (the template T1 image used by FNIRT during preprocessing to generate the warp; which is typically the AC-PC aligned, distortion corrected, bias field corrected T1w image .../T1w_acpc_dc_restore.nii.gz)
 
 OUTPUTS*:
 
