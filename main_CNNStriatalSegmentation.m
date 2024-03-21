@@ -22,7 +22,7 @@ function [store] = main_CNNStriatalSegmentation(varargin)
     %% end of new part
     numArgIn = length(varargin);
     currentArgNumber = 1;
-    [T1_acpc_template_brain, template_acpc_brainmask, segmentation_outputs_directory, BOLD_template_image, caudateMask, putamenMask, fnirtPathFileName, warpPathFileName] = deal([]);
+    [T1_acpc_template_brain, template_acpc_brainmask, segmentation_outputs_directory, BOLD_template_image, caudateMask, putamenMask, fnirtSourceT1path, warpPathFileName] = deal([]);
     while (currentArgNumber <= numArgIn)
         StringCurrentArg = (string(varargin{currentArgNumber}));
         numToAdd = 2;
@@ -39,10 +39,10 @@ function [store] = main_CNNStriatalSegmentation(varargin)
                 caudateMask = varargin{currentArgNumber + 1};
             case "putamenMask"
                 putamenMask = varargin{currentArgNumber + 1};
-            case "fnirtPathFileName"
-                fnirtPathFileName = varargin{currentArgNumber + 1};
             case "warpPathFileName"
                 warpPathFileName = varargin{currentArgNumber + 1};
+            case "fnirtSourceT1path"
+                fnirtSourceT1path = varargin{currentArgNumber + 1};
             otherwise
                 error("Unrecognized input argument")
         end
@@ -66,18 +66,18 @@ function [store] = main_CNNStriatalSegmentation(varargin)
     end
     template_acpc_brainmask = fullfile(segmentation_outputs_directory, [b c]);
 
-    if (~isempty(BOLD_template_image) && ~isempty(fnirtPathFileName) && ~isempty(warpPathFileName))
+    if (~isempty(BOLD_template_image) && ~isempty(fnirtSourceT1path) && ~isempty(warpPathFileName))
         [a,b,c] = fileparts(BOLD_template_image);
         if(~strcmp(a,segmentation_outputs_directory))
             copyfile(BOLD_template_image,segmentation_outputs_directory);
         end
         BOLD_template_image = fullfile(segmentation_outputs_directory, [b c]);
 
-        [a,b,c] = fileparts(fnirtPathFileName);
+        [a,b,c] = fileparts(fnirtSourceT1path);
         if(~strcmp(a,segmentation_outputs_directory))
-            copyfile(fnirtPathFileName,segmentation_outputs_directory);
+            copyfile(fnirtSourceT1path,segmentation_outputs_directory);
         end
-        fnirtPathFileName = fullfile(segmentation_outputs_directory, [b c]);
+        fnirtSourceT1path = fullfile(segmentation_outputs_directory, [b c]);
 
         [a,b,c] = fileparts(warpPathFileName);
         if(~strcmp(a,segmentation_outputs_directory))
@@ -162,16 +162,16 @@ function [store] = main_CNNStriatalSegmentation(varargin)
 
 
 
-if(~isempty(BOLD_template_image) && ~isempty(fnirtPathFileName) && ~isempty(warpPathFileName))
+if(~isempty(BOLD_template_image) && ~isempty(fnirtSourceT1path) && ~isempty(warpPathFileName))
         imageType = 'BOLDRes_templateSpace_striatalCNNparcels';
         % imagePrefix = [imageType '_'];
         % isMask = true;
         % [store,BOLDRes_templateSpace_striatalCNNparcels] = getReslicedCNN_image(store,unrotatedCNN_segmentation,BOLD_template_image,imageType,imagePrefix,isMask);
-        [store,BOLDRes_templateSpace_striatalCNNparcels] = resliceAndWarp(store,filename_n,BOLD_template_image,warpPathFileName, fnirtPathFileName, imageType);
+        [store,BOLDRes_templateSpace_striatalCNNparcels] = resliceAndWarp(store,filename_n,BOLD_template_image,warpPathFileName, fnirtSourceT1path, imageType);
         % movefile([segmentation_outputs_directory '/BOLDRes_templateSpace_striatalCNNparcels_striatalCNN_unrotated_raw_StriatalCNNparcels.nii'],[segmentation_outputs_directory '/BOLDRes_templateSpace_striatalCNNparcels.nii']);
-        movefile([BOLDRes_templateSpace_striatalCNNparcels], [segmentation_outputs_directory '/BOLDRes_templateSpace_striatalCNNparcels.nii']);
+        movefile([BOLDRes_templateSpace_striatalCNNparcels], [segmentation_outputs_directory '/BOLDRes_templateSpace_striatalCNNparcels_WARPED.nii']);
 	% Create 10 ROIs for bold resolution segmentations, as done for anatomical resolution segmentations
-         filename_n=[segmentation_outputs_directory '/BOLDRes_templateSpace_striatalCNNparcels.nii'];
+         filename_n=[segmentation_outputs_directory '/BOLDRes_templateSpace_striatalCNNparcels_WARPED.nii'];
          [store]= getseparatedROIs(store,filename_n,segmentation_outputs_directory,'bold');
 
 
@@ -291,18 +291,24 @@ function [store,reslicedRotatedCNN_T1] = getReslicedCNN_image(store,source_T1,re
 
 end
 
-function [store,resliceAndWarpedImage] = resliceAndWarp(store, thisSubjSegmentation_NATpath, MNIt1Path, warpPathFileName, fnirtPathFileName, imageType)
+function [store,resliceAndWarpedImage] = resliceAndWarp(store, thisSubjSegmentation_NATpath, MNIt1Path, warpPathFileName, fnirtSourceT1path, imageType)
     %WARP
     % This function uses wbcommand to warp native space segmentations
     % into MNI space
 
     % get output file name (this will be stored in the same directory as the segmentation folder)
+
+    % thisSubjSegmentation_NATpath  = input file to be warped
+    % MNIt1Path  = image to reslice (resample) to, can be a BOLD image
+    % warpPathFileName = the warp from acpc_dc space to MNI space, acpc_dc2standard.nii.gz
+    % fnirtSourceT1path = the template T1 image used by FNIRT during preprocessing to generate the warp above. Here the acpc aligned, distortion corrected, bias field corrected T1w image, T1w_acpc_dc_restore.nii.gz
+    % So the warp is from AC-PC aligned, distortion corrected, bias field corrected, native subject space to MNI space
     [path,~,~] = fileparts(MNIt1Path);
 
     [~,NATsegName,~] = fileparts(thisSubjSegmentation_NATpath);
     resliceAndWarpedImage = fullfile(path,[NATsegName '_WARPED.nii']);
 
-    command = ['wb_command -volume-resample ' thisSubjSegmentation_NATpath ' ' MNIt1Path ' ENCLOSING_VOXEL ' resliceAndWarpedImage ' -warp ' warpPathFileName ' -fnirt ' fnirtPathFileName];
+    command = ['wb_command -volume-resample ' thisSubjSegmentation_NATpath ' ' MNIt1Path ' ENCLOSING_VOXEL ' resliceAndWarpedImage ' -warp ' warpPathFileName ' -fnirt ' fnirtSourceT1path];
     status = system(command);
 
 

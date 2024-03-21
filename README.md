@@ -28,13 +28,13 @@ The toolkit was developed by John C. Williams, Srineil Nizambad, Yash Patel and 
 
 The striatal regions of interest (ROIs) segmented are the: ventral striatum (VST), pre-commissural putamen (prePU), post-commissural putamen (postPU), pre-commissural caudate (preCA), post-commissural caudate (postCA).
 
-The user provides a T1-weighted structural MRI image in ACPC orientation, a corresponding brain mask in ACPC orientation, and, optionally, a BOLD functional MRI template image, warp image and fnirt image for use in reslicing and warping the outputs to BOLD resolution.
+The user provides a T1-weighted structural MRI image in ACPC orientation, a corresponding brain mask in ACPC orientation, and, optionally, a BOLD functional MRI template image, warp image and fnirtSourceT1 image for use in reslicing and warping the outputs to BOLD resolution in MNI space.
 
 The following outputs are produced: a NIfTI image containing segmentations that can be overlaid on the T1 image and 10 separate NIfTI images for right and left hemispheric divisions of each of the 5 striatal ROIs segmented, in T1-based resolution. If the optional BOLD fMRI template image was specified, an additional NIfTI image containing segmentations that can be overlaid on the fMRI image and 10 separate NIfTI images for right and left hemispheric divisions of each of the 5 striatal ROIs segmented are produced, in BOLD-based resolution in MNI space.
 
 The main operating script of the pipeline is main_CNNStriatalSegmentation.m. This script is called by CNNStriatalSegmentation_example_script.m, which has a set of parameters that the user is instructed to adjust therein. Full running operations are discussed in the second section, RUNNING INSTRUCTIONS.
 
-SPM12 must be on your MATLAB path for this to work.  You can download it from https://www.fil.ion.ucl.ac.uk/spm/software/download/ .
+SPM12 and wb_command must be on your MATLAB path for this to work. You can find the links to these dependencies in the running instructions.
 
 INPUTS:
 
@@ -45,7 +45,7 @@ INPUTS:
 5. `<Putamen Mask>` (e.g., ...putamenMask.nii)
 6. `<BOLD template filename>` (image to reslice (resample) to, can be a BOLD image; e.g., ...MNINonLinear/Results/RSFC_fMRI_1/RSFC_fMRI_1.nii)
 7. `<warpPathFileName>` (the warp from AC-PC aligned, distortion corrected, bias field corrected, native subject space to MNI space .../acpc_dc2standard.nii.gz)
-8. `<fnirtPathFileName>` (the template T1 image used by FNIRT during preprocessing to generate the warp; which is typically the AC-PC aligned, distortion corrected, bias field corrected T1w image .../T1w_acpc_dc_restore.nii.gz)
+8. `<fnirtSourceT1path>` (the source images for the FNIRT normalization from subject to MNI space - the non-skull-stripped T1 images, AC-PC aligned, distortion corrected, bias field corrected T1w image .../T1w_acpc_dc_restore.nii.gz)
 
 OUTPUTS*:
 
@@ -61,7 +61,7 @@ OUTPUTS*:
 10. anat_left_VST.nii
 11. anat_right_VST.nii
 
-OPTIONAL OUTPUTS (if BOLD functional MRI, warpPath and fnirtPath are provided):
+OPTIONAL OUTPUTS (if BOLD functional MRI, warpPath and fnirtSourceT1path are provided):
 
 12. BOLDRes_templateSpace_striatalCNNparcels_WARPED.nii
 13. bold_left_prePU.nii
@@ -87,33 +87,32 @@ main_CNNStriatalSegmentation('T1_acpc_template_brain',T1_acpc_template_brain,...
         'putamenMask', putamenMask,...
 	'BOLD_template_image',BOLD_template_image,...
         'warpPathFileName', warpPathFileName,...
-        'fnirtPathFileName', fnirtPathFileName);
+        'fnirtSourceT1path',fnirtSourceT1path);
 ```
 
 ## RUNNING INSTRUCTIONS:
 
-1. Prior to downloading this GitHub repository on your system, ensure that you have the right versions of Python and required dependencies on your system. Refer to REQUIRED DEPENDENCIES, PYTHON VERSION, AND OTHER FILES, to ensure you have the proper versions of Python and required libraries. Please also ensure you have SPM12 on your system, which may be downloaded here: https://www.fil.ion.ucl.ac.uk/spm/software/spm12/.
+1. Prior to downloading this GitHub repository on your system, ensure that you have the right versions of Python and required dependencies on your system. Refer to REQUIRED DEPENDENCIES, PYTHON VERSION, AND OTHER FILES, to ensure you have the proper versions of Python and required libraries. Please also ensure you have SPM12 on your path, which may be downloaded from [here](https://www.fil.ion.ucl.ac.uk/spm/software/spm12/) as well as wb_command by Connectome Workbench which may be downloaded from [here](https://www.humanconnectome.org/software/workbench-command).
 2. Download this GitHub repository onto your system.
 3. Within the checkpoint file, please replace “/mnt/jxvs2_02/neil/StriatalSegmentation/“ to where your subfolder StriatalSegmentation is located.
 4. Adjust the necessary parameters in CNNStriatalSegmentation_example_script.m; supply the paths for the files and subfolders as instructed therein and as described below.
 
-   For each run of the pipeline involving different subjects, the following are required and the paths must be adjusted:   T1_acpc_template_brain, template_acpc_brainmask, segmentation_outputs_directory, caudateMask and putamenMask.  The following input is optional: BOLD_template_image, warpPathFileName, fnirtPathFileName.
-
-1. T1_acpc_template_brain refers to the path of the T1 weighted MRI image (in NAT space) relating to the subject used for this run.
-2. template_acpc_brainmask refers to the path of the brain mask relating to the subject used for this run.
-3. segmentation_outputs_directory refers to the directory where all final and intermediate outputs of this CNN pipeline will be saved for each subject run.
-4. Bold_template_image refers to the path of the bold functional MRI image relating to the subject used for this run. This image is used to reslice (resample) to.
-5. CaudateMask is the mask in native space applied to ensure the segmentation adheres to the anatomical boundaries defined by the mask.
-6. PutamenMask is the mask in native space applied to ensure the segmentation adheres to the anatomical boundaries defined by the mask.
-7. WarpPathFileName is the warp from AC-PC aligned, distortion corrected, bias field corrected, native subject space to MNI space, `acpc_dc2standard.nii.gz` in HCP MPP preprocessed data.
-8. fnirtPathFileName is the template T1 image used by FNIRT during preprocessing to generate the warp above, typically the acpc aligned, distortion corrected, bias field corrected T1w image, `T1w_acpc_dc_restore.nii.gz` in HCP MPP preprocessed data.
-5. Ensure SPM12 and tippVol are on your path in MATLAB and run the script CNNStriatalSegmentation_example_script.m.
-6. You may now inspect your final striatal segmentations for both your structural and functional images, found in the segmentation_outputs_directory (whose path you edited in CNNStriatalSegmentation_example_script.m from step 5), in an image viewer of your choice. Our team used MRIcron, a free tool readily available at: https://www.nitrc.org/projects/mricron. The directory also contains intermediates generated in the pipeline, which may be viewed.
+   For each run of the pipeline involving different subjects, the following are required and the paths must be adjusted:   T1_acpc_template_brain, template_acpc_brainmask, segmentation_outputs_directory, caudateMask and putamenMask.  The following input is optional: BOLD_template_image, warpPathFileName, fnirtSourceT1path.
+5. T1_acpc_template_brain refers to the path of the T1 weighted MRI image (in NAT space) relating to the subject used for this run.
+6. template_acpc_brainmask refers to the path of the brain mask relating to the subject used for this run.
+7. segmentation_outputs_directory refers to the directory where all final and intermediate outputs of this CNN pipeline will be saved for each subject run.
+8. Bold_template_image refers to the path of the bold functional MRI image relating to the subject used for this run. This image is used to reslice (resample) to.
+9. CaudateMask is the mask in native space applied to ensure the segmentation adheres to the anatomical boundaries defined by the mask.
+10. PutamenMask is the mask in native space applied to ensure the segmentation adheres to the anatomical boundaries defined by the mask.
+11. WarpPathFileName is the warp from AC-PC aligned, distortion corrected, bias field corrected, native subject space to MNI space, `acpc_dc2standard.nii.gz` in HCP MPP preprocessed data.
+12. FnirtSourceT1path is the non-skull-stripped T1w source image used by FNIRT during preprocessing to generate the warp above, typically the acpc aligned, distortion corrected, bias field corrected T1w image, `T1w_acpc_dc_restore.nii.gz` in HCP MPP preprocessed data.
+13. Ensure SPM12, tippVol and wb_command are on your path in MATLAB and run the script CNNStriatalSegmentation_example_script.m.
+14. You may now inspect your final striatal segmentations for both your structural and functional images, found in the segmentation_outputs_directory (whose path you edited in CNNStriatalSegmentation_example_script.m from step 5), in an image viewer of your choice. Our team used MRIcron, a free tool readily available [here](https://www.nitrc.org/projects/mricron). The directory also contains intermediates generated in the pipeline, which may be viewed. Intermediates generated prior to the ROI corrections, which are confined within anatomical boundaries, are also preserved. This is due to the fact that wb_command requires explicit input and output file paths for operations, as it does not process these corrections in memory.
 
 The final anatomical resolution segmentation mask is named:
 anatRes_templateSpace_striatalCNNparcels.nii. The 10 separate hemispheric-specific ROI images produced are named: anat_left_prePU.nii,anat_right_prePU.nii,anat_left_preCA.nii,anat_right_preCA.nii,anat_left_postCA.nii,anat_right_postCA.nii,anat_left_postPU.nii,anat_right_postPU.nii, anat_left_VST.nii,anat_right_VST.nii.
 
-If the optional BOLD fMRI template image is specified, the final BOLD fMRI resolution segmentation mask in MNI space is additionally produced and named:
+If the optional BOLD fMRI template image, warpPath input and fnirtSourceT1 input is specified, the final BOLD fMRI resolution segmentation mask in MNI space is additionally produced and named:
 BOLDRes_templateSpace_striatalCNNparcels_WARPED.nii. The 10 separate hemispheric-specific ROI images produced are named: bold_left_prePU.nii,bold_right_prePU.nii,bold_left_preCA.nii,bold_right_preCA.nii,bold_left_postCA.nii,bold_right_postCA.nii,bold_left_postPU.nii,bold_right_postPU.nii, bold_left_VST.nii,bold_right_VST.nii.
 
 ## PIPELINE STEPS
@@ -141,9 +140,9 @@ BOLDRes_templateSpace_striatalCNNparcels_WARPED.nii. The 10 separate hemispheric
     This is achieved by having the product of step 10a set equal to zero for all values not equal to the integer representing the nth ROI in consideration. Since the product of 10a is an image where each voxel is either assigned to an integer representing each of the 5 ROIs (1-5) or not assigned to any ROI (0), each ROI can be separated as aforementioned. For each whole-brain ROI, the right and left hemispheric divisions of the ROI can be captured by setting the image to zero at indices that represent negative XYZ coordinates (as gathered by tippVol) and positive XYZ coordinates, respectively.
 11. (Optional)
 
-    a) If the user specifies a BOLD fMRI template image, Warp image and the Fnirt image then an additional output image is generated from anatRes_templateSpace_striatalCNNparcels.nii leveraging the wb_command's functionality to reslice to BOLD resolution and warp to MNI space. This output is BOLDRes_templateSpace_striatalCNNparcels_WARPED.nii.
+    a) If the user specifies a BOLD fMRI template image, Warp image and the fnirtSourceT1 image then an additional output image is generated from anatRes_templateSpace_striatalCNNparcels.nii leveraging the wb_command's functionality to reslice to BOLD resolution and warp to MNI space. This output is BOLDRes_templateSpace_striatalCNNparcels_WARPED.nii.
 
-    b) Similar to step 10c, 10 ROIs are produced based on the segmentations in the BOLDRes_templateSpace_striatalCNNparcels_WARPED.nii image. These are: bold_left_prePU.nii,bold_right_prePU.nii,bold_left_preCA.nii,bold_right_preCA.nii, bold_left_postCA.nii,bold_right_postCA.nii,bold_left_postPU.nii,bold_right_postPU.nii, bold_left_VST.nii,bold_right_VST.nii
+    b) Similar to step 10c, ten ROIs are separated from the BOLDRes_templateSpace_striatalCNNparcels_WARPED.nii image and split between the left and right hemispheres to produce the following: bold_left_prePU.nii,bold_right_prePU.nii,bold_left_preCA.nii,bold_right_preCA.nii, bold_left_postCA.nii,bold_right_postCA.nii,bold_left_postPU.nii,bold_right_postPU.nii, bold_left_VST.nii,bold_right_VST.nii
 
 INPUTS:
 
@@ -154,7 +153,7 @@ INPUTS:
 5. `<Putamen Mask>` (e.g., ...putamenMask.nii)
 6. `<BOLD template filename>` (image to reslice (resample) to, can be a BOLD image; e.g., ...MNINonLinear/Results/RSFC_fMRI_1/RSFC_fMRI_1.nii)
 7. `<warpPathFileName>` (the warp from AC-PC aligned, distortion corrected, bias field corrected, native subject space to MNI space; e.g., .../acpc_dc2standard.nii.gz)
-8. `<fnirtPathFileName>` (the template T1 image used by FNIRT during preprocessing to generate the warp; e.g., Here the acpc aligned, distortion corrected, bias field corrected T1w image .../T1w_acpc_dc_restore.nii.gz)
+8. `<fnirtSourceT1path>` (the template T1 image used by FNIRT during preprocessing to generate the warp; e.g., Here the acpc aligned, distortion corrected, bias field corrected T1w image .../T1w_acpc_dc_restore.nii.gz)
 
 OUTPUTS, INCLUDING INTERMEDIATES:
 
@@ -176,9 +175,9 @@ OUTPUTS, INCLUDING INTERMEDIATES:
 	16. anat_right_postPU.nii
 	17. anat_left_VST.nii
 	18. anat_right_VST.nii
-	19. `<Segmentation Output Directory>`/Intermediates/*intermediate files for clustering and removing holes*
+	19. `<Segmentation Output Directory>`/Intermediates/*intermediate files for clustering and removing holes* 
 
-    (20-30 are OPTIONAL, dependent on whether a BOLD fMRI input, warpPath input and FnirtPath input are provided)
+    (20-30 are OPTIONAL, dependent on whether a BOLD fMRI input, warpPath input and fnirtSourceT1 input are provided)
 	20. BOLDRes_templateSpace_striatalCNNparcels_WARPED.nii
 	21. bold_left_prePU.nii
 	22. bold_right_prePU.nii
@@ -206,3 +205,5 @@ Nibabel: 4.0.2
 Scipy: 1.9.
 
 SPM12 must be installed and on the MATLAB path prior to running the pipeline.
+
+wb_command from Connectome Workbench
