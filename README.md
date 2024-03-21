@@ -1,6 +1,7 @@
 # Toolkit_for_MIRA_LAB_Striatal_Segmentation (https://github.com/MMTI/Toolkit_for_MIRA_LAB_Striatal_Segmentation)
 
 Authors: John C. Williams, MS, Srineil Nizambad, BS, Yash Patel, MS, Philip Tubiolo, MS, Mario Serrano-Sosa, PhD, Karl Spuhler, PhD, Jared X. Van Snellenberg, PhD, and Chuan Huang, PhD.
+
 Authors/developers of original CNN Striatal Segmentation Python code (https://github.com/MIRA-Lab-stack/Striatal_Segmentation): Mario Serrano-Sosa, PhD, Karl Spuhler, PhD, and Chuan Huang, PhD.
 
 Table of Contents:
