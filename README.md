@@ -204,7 +204,7 @@ OUTPUTS, INCLUDING INTERMEDIATES:
 
 This pipeline was tested using the following versions of Python and libraries:
 
-Python: 2.7.5
+Python: 3.9.14
 
 Tensorflow: 2.10.0
 
